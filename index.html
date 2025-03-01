@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+   <head>
+      <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+      <base target="_top">
+      <title>Chatbot(AI)</title>
+      
+      <!-- Favicon -->
+      <link rel="icon" type="image/png" sizes="192x192" href="https://tinypic.host/images/2025/03/01/S__60047421_0.jpg">
+
+      <!-- Apple Touch Icon -->
+      <link rel="apple-touch-icon" sizes="180x180" href="https://tinypic.host/images/2025/03/01/S__60047421_0.jpg">
+
+      <!-- Manifest -->
+      <link rel="manifest" href="/manifest.json">
+
+      <!-- Theme Color -->
+      <meta name="theme-color" content="#ffffff">
+
+      <!-- Enable fullscreen for iOS -->
+      <meta name="apple-mobile-web-app-capable" content="yes">
+      <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+      <!-- Custom CSS -->
+      <style>
+         html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+            background-color: #ffffff;
+         }
+
+         iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+            -webkit-overflow-scrolling: touch; /* Enable smooth scrolling on iOS */
+         }
+      </style>
+   </head>
+   <body>
+      <iframe 
+         id="webframe"
+         src="https://script.google.com/macros/s/AKfycbxhAST_g_mUL_nFtDWqC6foO17CwMaIDfuAcoIbLi-ykvXfiOmB7n3wF8PIDBn0edUbCg/exec"
+         allow="autoplay; fullscreen"
+         sandbox="allow-forms allow-same-origin allow-scripts allow-popups">
+      </iframe>
+
+      <!-- iOS Focus and Keyboard Fix -->
+      <script>
+         document.addEventListener('touchstart', function(event) {
+            const iframe = document.getElementById('webframe');
+            if (iframe) {
+               iframe.contentWindow.focus();
+            }
+         });
+
+         // Ensure iframe gets focus properly on iOS
+         document.getElementById('webframe').addEventListener('load', function() {
+            const iframe = this;
+            iframe.contentWindow.document.body.addEventListener('click', function() {
+               iframe.contentWindow.focus();
+            });
+         });
+
+         // iOS Specific: Force keyboard to show
+         document.addEventListener('focusin', function(event) {
+            if (event.target.tagName === 'IFRAME') {
+               setTimeout(() => {
+                  event.target.blur(); // Temporarily blur
+                  event.target.focus(); // Force refocus to show keyboard
+               }, 50);
+            }
+         });
+      </script>
+   </body>
+</html>
