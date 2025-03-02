@@ -6,8 +6,8 @@
     <base target="_top">
     <title>Trip-Planner</title>
     
-    <link rel="icon" type="image/png" href="https://s21-kling.klingai.com/bs2/upload-ylab-stunt-sgp/se/ai_portal_sgp_mmu_txt2img_aiweb_v15/53e5aa90-d7b3-457c-8217-5266265c1a5a_image.png?x-kcdn-pid=112372">
-    <link rel="apple-touch-icon" href="https://s21-kling.klingai.com/bs2/upload-ylab-stunt-sgp/se/ai_portal_sgp_mmu_txt2img_aiweb_v15/53e5aa90-d7b3-457c-8217-5266265c1a5a_image.png?x-kcdn-pid=112372">
+    <link rel="icon" type="image/png" href="...">
+    <link rel="apple-touch-icon" href="...">
     <link rel="manifest" href="manifest.json">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Trip-Planner">
@@ -46,28 +46,26 @@
             overflow: hidden;
         }
 
-        /* รูปเริ่มต้น (มือถือ) */
+        /* Default: มือถือ */
         .app-splash {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: #566573 
-                        url("https://s21-kling.klingai.com/bs2/upload-ylab-stunt-sgp/se/ai_portal_sgp_mmu_txt2img_aiweb_v15/cfbaa167-4bf9-42f6-beed-23097d8d9997_image.png?x-kcdn-pid=112372")
-                        no-repeat center center;
-            background-size: contain;
+            background-color: #566573;
+            background-image: url("https://s21-kling.klingai.com/bs2/upload-ylab-stunt-sgp/se/ai_portal_sgp_mmu_txt2img_aiweb_v15/cfbaa167-4bf9-42f6-beed-23097d8d9997_image.png?x-kcdn-pid=112372");
+            background-repeat: no-repeat;
+            background-position: center center;
+            background-size: cover; /* หรือ cover หากต้องการให้เต็มจอ */
             z-index: 9999;
             transition: opacity 0.5s ease-out;
         }
 
-        /* เมื่อจอกว้าง >= 768px ให้เปลี่ยนไปใช้รูปสำหรับ Desktop */
+        /* Desktop: จอกว้าง >= 768px */
         @media (min-width: 768px) {
             .app-splash {
-                background: #566573 
-                            url("https://s21-kling.klingai.com/bs2/upload-ylab-stunt-sgp/se/ai_portal_sgp_mmu_txt2img_aiweb_v15/62c343d3-14e2-43a2-a89a-ffa3e839425a_image.png?x-kcdn-pid=112372")
-                            no-repeat center center;
-                background-size: contain;
+                background-image: url("https://s21-kling.klingai.com/bs2/upload-ylab-stunt-sgp/se/ai_portal_sgp_mmu_txt2img_aiweb_v15/62c343d3-14e2-43a2-a89a-ffa3e839425a_image.png?x-kcdn-pid=112372");
             }
         }
 
