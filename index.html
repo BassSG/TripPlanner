@@ -6,19 +6,19 @@
     <base target="_top">
     <title>Trip Planner</title>
     
-    <!-- ไอคอนสำหรับเว็บไซต์และแอป -->
+
     <link rel="icon" type="image/png" href="https://s21-kling.klingai.com/bs2/upload-ylab-stunt-sgp/se/ai_portal_sgp_mmu_txt2img_aiweb_v15/53e5aa90-d7b3-457c-8217-5266265c1a5a_image.png?x-kcdn-pid=112372">
     <link rel="apple-touch-icon" href="https://s21-kling.klingai.com/bs2/upload-ylab-stunt-sgp/se/ai_portal_sgp_mmu_txt2img_aiweb_v15/53e5aa90-d7b3-457c-8217-5266265c1a5a_image.png?x-kcdn-pid=112372">
     
-    <!-- PWA manifest -->
+
     <link rel="manifest" href="manifest.json">
     
-    <!-- เมตาแท็กสำหรับ iOS -->
+
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Trip-Planner">
     
-    <!-- เมตาแท็กสำหรับ Android -->
+
     <meta name="theme-color" content="#4285f4">
     <meta name="mobile-web-app-capable" content="yes">
     
@@ -56,7 +56,7 @@
             overflow: hidden;
         }
         
-        /* สไตล์เพิ่มเติมเพื่อให้ดูเหมือนแอป */
+
         .app-splash {
             position: fixed;
             top: 0;
@@ -77,7 +77,7 @@
             object-fit: contain;
         }
         
-        /* สไตล์สำหรับ iOS safe area */
+
         @supports (padding: max(0px)) {
             body {
                 padding-top: max(0px, env(safe-area-inset-top));
@@ -89,21 +89,28 @@
     </style>
 </head>
 <body>
-    <!-- หน้า splash screen -->
+
     <div class="app-splash" id="splash-screen">
         <img src="https://tinypic.host/images/2025/03/02/image-Photoroom.png" alt="Trip-Planner">
     </div>
     
-    <!-- คอนเทนเนอร์หลักสำหรับแอป -->
+
     <iframe id="app-container" src="https://script.google.com/macros/s/AKfycbyEhiEFqaFgLmjdIIiGU9LGU8tIE3Xw-MtTJrS9mpuN7C1AiV4Y845Bttaj4ilgiETb/exec"></iframe>
     
     <script>
-        // แสดง splash screen เมื่อโหลดหน้า
+
         document.addEventListener('DOMContentLoaded', function() {
 
+            setTimeout(function() {
+                const splash = document.getElementById('splash-screen');
+                splash.style.opacity = '0';
+                setTimeout(function() {
+                    splash.style.display = 'none';
+                }, 500);
+            }, 2000);
         });
         
-        // ลงทะเบียน service worker สำหรับ PWA
+
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', function() {
                 navigator.serviceWorker.register('/service-worker.js')
@@ -116,14 +123,14 @@
             });
         }
         
-        // ป้องกันการเลื่อนหน้าจอ
+
         document.body.addEventListener('touchmove', function(e) {
             if (e.target.id !== 'app-container') {
                 e.preventDefault();
             }
         }, { passive: false });
         
-        // ป้องกันการ zoom ด้วย pinch
+
         document.addEventListener('gesturestart', function(e) {
             e.preventDefault();
         });
