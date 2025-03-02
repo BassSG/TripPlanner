@@ -2,9 +2,9 @@
 const CACHE_NAME = 'trip-planner-cache-v1';
 
 const urlsToCache = [
-  '/',
-  '/index.html',
-  '/manifest.json',
+  './',
+  './index.html',
+  './manifest.json',
   'https://s21-kling.klingai.com/bs2/upload-ylab-stunt-sgp/se/ai_portal_sgp_mmu_txt2img_aiweb_v15/53e5aa90-d7b3-457c-8217-5266265c1a5a_image.png?x-kcdn-pid=112372'
 ];
 
