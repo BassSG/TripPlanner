@@ -45,37 +45,37 @@
       </style>
    </head>
    <body>
+      <!-- ลบ sandbox attribute ออกเพื่อให้การจัดการ focus ภายใน iframe ทำงานได้เต็มที่ -->
       <iframe 
          id="webframe"
          src="https://script.google.com/macros/s/AKfycbyEhiEFqaFgLmjdIIiGU9LGU8tIE3Xw-MtTJrS9mpuN7C1AiV4Y845Bttaj4ilgiETb/exec"
-         allow="autoplay; fullscreen"
-         sandbox="allow-forms allow-same-origin allow-scripts allow-popups">
+         allow="autoplay; fullscreen">
       </iframe>
 
       <!-- iOS Focus and Keyboard Fix -->
       <script>
+         // เมื่อมีการสัมผัสบนหน้าจอ ให้พยายามส่ง focus ไปที่ iframe หลังจากดีเลย์เล็กน้อย
          document.addEventListener('touchstart', function(event) {
             const iframe = document.getElementById('webframe');
-            if (iframe) {
-               iframe.contentWindow.focus();
+            if (iframe && iframe.contentWindow) {
+               setTimeout(() => {
+                  iframe.contentWindow.focus();
+               }, 100);
             }
          });
 
-         // Ensure iframe gets focus properly on iOS
+         // เมื่อ iframe โหลดเสร็จ ให้ส่ง focus ไปที่ iframe พร้อมกับจับ event คลิกภายใน iframe
          document.getElementById('webframe').addEventListener('load', function() {
-            const iframe = this;
-            iframe.contentWindow.document.body.addEventListener('click', function() {
-               iframe.contentWindow.focus();
-            });
-         });
-
-         // iOS Specific: Force keyboard to show
-         document.addEventListener('focusin', function(event) {
-            if (event.target.tagName === 'IFRAME') {
-               setTimeout(() => {
-                  event.target.blur(); // Temporarily blur
-                  event.target.focus(); // Force refocus to show keyboard
-               }, 50);
+            const iframeWindow = this.contentWindow;
+            setTimeout(() => {
+               iframeWindow.focus();
+            }, 100);
+            
+            // เมื่อมีการคลิกภายใน iframe ให้รีเฟรช focus
+            if (iframeWindow.document && iframeWindow.document.body) {
+               iframeWindow.document.body.addEventListener('click', () => {
+                  iframeWindow.focus();
+               });
             }
          });
       </script>
