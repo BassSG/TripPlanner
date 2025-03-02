@@ -1,88 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-   <meta charset="UTF-8">
-   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-   <base target="_top">
-   <title>Trip Planner</title>
-   
-   <!-- Favicon -->
-   <link rel="icon" type="image/png" sizes="192x192" href="https://s21-kling.klingai.com/bs2/upload-ylab-stunt-sgp/se/ai_portal_sgp_mmu_txt2img_aiweb_v15/53e5aa90-d7b3-457c-8217-5266265c1a5a_image.png?x-kcdn-pid=112372">
 
-   <!-- Apple Touch Icon -->
-   <link rel="apple-touch-icon" sizes="180x180" href="https://s21-kling.klingai.com/bs2/upload-ylab-stunt-sgp/se/ai_portal_sgp_mmu_txt2img_aiweb_v15/53e5aa90-d7b3-457c-8217-5266265c1a5a_image.png?x-kcdn-pid=112372">
-
-   <!-- Manifest -->
-   <link rel="manifest" href="/manifest.json">
-
-   <!-- Theme Color -->
-   <meta name="theme-color" content="#ffffff">
-
-   <!-- Enable fullscreen for iOS -->
-   <meta name="apple-mobile-web-app-capable" content="yes">
-   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
-   <!-- Custom CSS -->
-   <style>
-      html, body {
-         margin: 0;
-         padding: 0;
-         width: 100%;
-         height: 100%;
-         overflow: hidden; /* คงค่าเดิมไว้ตามที่ต้องการ */
-         font-family: Arial, sans-serif;
-         background-color: #ffffff;
-      }
-
-      iframe {
-         position: absolute;
-         top: 0;
-         left: 0;
-         width: 100%;
-         height: 100%;
-         border: 0;
-         -webkit-overflow-scrolling: touch; /* Enable smooth scrolling on iOS */
-         z-index: 1; /* Ensure iframe is on top */
-         pointer-events: auto; /* Ensure touch events are captured */
-      }
-   </style>
-</head>
-<body>
-   <iframe 
-      id="webframe"
-      src="https://script.google.com/macros/s/AKfycbyEhiEFqaFgLmjdIIiGU9LGU8tIE3Xw-MtTJrS9mpuN7C1AiV4Y845Bttaj4ilgiETb/exec"
-      allow="autoplay; fullscreen"
-      sandbox="allow-forms allow-same-origin allow-scripts allow-popups allow-modals"
-      tabindex="0"> <!-- Add tabindex for focusability -->
-   </iframe>
-
-   <!-- JavaScript for Focus Handling -->
-   <script>
-      const iframe = document.getElementById('webframe');
-
-      // --- (คอมเมนต์ออก) Force focus on touch events ---
-      // document.addEventListener('touchstart', function() {
-      //    iframe.contentWindow.focus();
-      // });
-
-      // Handle focus when iframe loads
-      iframe.addEventListener('load', function() {
-         const iframeDoc = iframe.contentWindow.document;
-
-         // Add click handler to focus iframe
-         iframeDoc.body.addEventListener('click', function() {
-            iframe.contentWindow.focus();
-         });
-
-         // Force focus on input elements when they gain focus
-         iframeDoc.addEventListener('focusin', function(e) {
-            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
-               setTimeout(() => {
-                  e.target.focus();
-               }, 0);
-            }
-         });
-      });
-   </script>
-</body>
+<html>
+   <head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+      <base target="_top">
+         <title>Price_ALert</title>
+      <link rel="icon" type="image/png" href="https://s21-kling.klingai.com/bs2/upload-ylab-stunt-sgp/se/ai_portal_sgp_mmu_txt2img_aiweb_v15/53e5aa90-d7b3-457c-8217-5266265c1a5a_image.png?x-kcdn-pid=112372">
+   </head>
+   <body>
+      <iframe style="position: absolute;top: 0;left: 0;width: 100%;height: 100%;border: 0;" src="https://script.google.com/macros/s/AKfycbyEhiEFqaFgLmjdIIiGU9LGU8tIE3Xw-MtTJrS9mpuN7C1AiV4Y845Bttaj4ilgiETb/exec"></iframe>
+   </body>
 </html>
