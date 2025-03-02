@@ -6,22 +6,13 @@
     <base target="_top">
     <title>Trip-Planner</title>
     
-
     <link rel="icon" type="image/png" href="https://s21-kling.klingai.com/bs2/upload-ylab-stunt-sgp/se/ai_portal_sgp_mmu_txt2img_aiweb_v15/53e5aa90-d7b3-457c-8217-5266265c1a5a_image.png?x-kcdn-pid=112372">
     <link rel="apple-touch-icon" href="https://s21-kling.klingai.com/bs2/upload-ylab-stunt-sgp/se/ai_portal_sgp_mmu_txt2img_aiweb_v15/53e5aa90-d7b3-457c-8217-5266265c1a5a_image.png?x-kcdn-pid=112372">
-    
-
     <link rel="manifest" href="manifest.json">
-    
-
-
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Trip-Planner">
-    
-
     <meta name="theme-color" content="#4285f4">
 
-    
     <style>
         /* Reset CSS */
         * {
@@ -54,7 +45,6 @@
             z-index: 1;
             overflow: hidden;
         }
-        
 
         .app-splash {
             position: fixed;
@@ -62,20 +52,14 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: #4285f4;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            /* เปลี่ยนพื้นหลังเป็นภาพใหม่ */
+            background: #4285f4 url("https://s21-kling.klingai.com/bs2/upload-ylab-stunt-sgp/se/ai_portal_sgp_mmu_txt2img_aiweb_v15/cfbaa167-4bf9-42f6-beed-23097d8d9997_image.png?x-kcdn-pid=112372")
+                        no-repeat center center;
+            /* ใช้ contain เพื่อให้เห็นรูปเต็มทั้งภาพ (อาจมีขอบว่างด้านข้าง/บนล่าง) */
+            background-size: contain;
             z-index: 9999;
             transition: opacity 0.5s ease-out;
         }
-        
-        .app-splash img {
-            width: 350px;
-            height: 350px;
-            object-fit: contain;
-        }
-        
 
         @supports (padding: max(0px)) {
             body {
@@ -89,17 +73,13 @@
 </head>
 <body>
 
-    <div class="app-splash" id="splash-screen">
-        <img src="https://tinypic.host/images/2025/03/02/image-Photoroom.png" alt="Trip-Planner">
-    </div>
-    
+    <!-- ตัดแท็ก <img> ทิ้งไป แล้วใช้ background-image แทน -->
+    <div class="app-splash" id="splash-screen"></div>
 
     <iframe id="app-container" src="https://script.google.com/macros/s/AKfycbyEhiEFqaFgLmjdIIiGU9LGU8tIE3Xw-MtTJrS9mpuN7C1AiV4Y845Bttaj4ilgiETb/exec"></iframe>
     
     <script>
-
         document.addEventListener('DOMContentLoaded', function() {
-
             setTimeout(function() {
                 const splash = document.getElementById('splash-screen');
                 splash.style.opacity = '0';
@@ -109,7 +89,6 @@
             }, 2000);
         });
         
-
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', function() {
                 navigator.serviceWorker.register('/service-worker.js')
@@ -121,14 +100,12 @@
                     });
             });
         }
-        
 
         document.body.addEventListener('touchmove', function(e) {
             if (e.target.id !== 'app-container') {
                 e.preventDefault();
             }
         }, { passive: false });
-        
 
         document.addEventListener('gesturestart', function(e) {
             e.preventDefault();
