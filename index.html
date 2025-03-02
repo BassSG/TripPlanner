@@ -100,14 +100,7 @@
     <script>
         // แสดง splash screen เมื่อโหลดหน้า
         document.addEventListener('DOMContentLoaded', function() {
-            // ซ่อน splash screen หลังจาก 2 วินาที
-            setTimeout(function() {
-                const splash = document.getElementById('splash-screen');
-                splash.style.opacity = '0';
-                setTimeout(function() {
-                    splash.style.display = 'none';
-                }, 500);
-            }, 2000);
+
         });
         
         // ลงทะเบียน service worker สำหรับ PWA
