@@ -22,18 +22,21 @@
    <meta name="apple-mobile-web-app-capable" content="yes">
    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
-   <!-- Custom CSS -->
+   <!-- ปรับ CSS: เอา overflow: hidden ออก เพื่อให้ iOS Safari สามารถ scroll/เปิดคีย์บอร์ดได้เต็มที่ -->
    <style>
       html, body {
          margin: 0;
          padding: 0;
          width: 100%;
          height: 100%;
-         overflow: hidden;
+         /* overflow: hidden;  <-- ยกเลิกการซ่อน scroll เพื่อไม่ให้ iOS มีปัญหาคีย์บอร์ด */
          font-family: Arial, sans-serif;
          background-color: #ffffff;
       }
-
+      /* ถ้าต้องการให้เลื่อนหน้าน้อยที่สุด อาจตั้งค่าเป็น auto (หรือ visible) */
+      body {
+         overflow: auto;
+      }
       iframe {
          position: absolute;
          top: 0;
@@ -42,8 +45,8 @@
          height: 100%;
          border: 0;
          -webkit-overflow-scrolling: touch; /* Enable smooth scrolling on iOS */
-         z-index: 1; /* Ensure iframe is on top */
-         pointer-events: auto; /* Ensure touch events are captured */
+         z-index: 1; 
+         pointer-events: auto;
       }
    </style>
 </head>
@@ -53,30 +56,32 @@
       src="https://script.google.com/macros/s/AKfycbyEhiEFqaFgLmjdIIiGU9LGU8tIE3Xw-MtTJrS9mpuN7C1AiV4Y845Bttaj4ilgiETb/exec"
       allow="autoplay; fullscreen"
       sandbox="allow-forms allow-same-origin allow-scripts allow-popups allow-modals"
-      tabindex="0"> <!-- Add tabindex for focusability -->
+      tabindex="0">
    </iframe>
 
-   <!-- JavaScript for Focus Handling -->
+   <!-- JavaScript หลังการปรับแก้ -->
    <script>
       const iframe = document.getElementById('webframe');
 
-      // Force focus on touch events
-      document.addEventListener('touchstart', function() {
-         iframe.contentWindow.focus();
-      });
+      // **ลบ** document.addEventListener('touchstart', ...) เพื่อเลี่ยงการบังคับ focus() จาก parent
+      // document.addEventListener('touchstart', function() {
+      //    iframe.contentWindow.focus();
+      // });
 
-      // Handle focus when iframe loads
       iframe.addEventListener('load', function() {
          const iframeDoc = iframe.contentWindow.document;
 
-         // Add click handler to focus iframe
-         iframeDoc.body.addEventListener('click', function() {
-            iframe.contentWindow.focus();
-         });
+         // **ลบ** ส่วนที่บังคับ focus ใน iframeDoc.body
+         // iframeDoc.body.addEventListener('click', function() {
+         //    iframe.contentWindow.focus();
+         // });
 
-         // Force focus on input elements when they gain focus
+         // ถ้ายังอยากคง logic สำหรับ focus input ได้อัตโนมัติเมื่อคลิก input
+         // ในกรณีบน iOS ถ้า user แตะ input อยู่แล้ว Safari จะจัดการ focus ให้อัตโนมัติ
+         // โค้ดด้านล่างนี้อาจไม่จำเป็น แต่ถ้าจะเก็บก็ได้
          iframeDoc.addEventListener('focusin', function(e) {
             if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+               // ดีเลย์เล็กน้อยเผื่อ iOS
                setTimeout(() => {
                   e.target.focus();
                }, 0);
