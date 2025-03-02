@@ -6,6 +6,7 @@
     <base target="_top">
     <title>Trip-Planner</title>
     
+    <!-- ส่วน icon สำหรับแท็บและ shortcut (ไม่แสดงในเนื้อหาของหน้าเว็บ) -->
     <link rel="icon" type="image/png" href="...">
     <link rel="apple-touch-icon" href="...">
     <link rel="manifest" href="manifest.json">
@@ -35,6 +36,17 @@
                          Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
         }
         
+        /* โลโก้เว็บไซต์ที่แสดงในหน้าเว็บ */
+        #site-header {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            z-index: 10000; /* อยู่ด้านบน iframe */
+        }
+        #site-header img {
+            height: 50px; /* ปรับขนาดตามต้องการ */
+        }
+        
         #app-container {
             position: absolute;
             top: 0;
@@ -57,7 +69,7 @@
             background-image: url("https://s21-kling.klingai.com/bs2/upload-ylab-stunt-sgp/se/ai_portal_sgp_mmu_txt2img_aiweb_v15/cfbaa167-4bf9-42f6-beed-23097d8d9997_image.png?x-kcdn-pid=112372");
             background-repeat: no-repeat;
             background-position: center center;
-            background-size: cover; /* หรือ cover หากต้องการให้เต็มจอ */
+            background-size: cover;
             z-index: 9999;
             transition: opacity 0.5s ease-out;
         }
@@ -80,6 +92,11 @@
     </style>
 </head>
 <body>
+
+    <!-- ส่วนแสดงโลโก้เว็บไซต์ -->
+    <header id="site-header">
+        <img src="https://s21-kling.klingai.com/bs2/upload-ylab-stunt-sgp/se/ai_portal_sgp_mmu_txt2img_aiweb_v15/53e5aa90-d7b3-457c-8217-5266265c1a5a_image.png?x-kcdn-pid=112372" alt="Site Logo">
+    </header>
 
     <div class="app-splash" id="splash-screen"></div>
 
