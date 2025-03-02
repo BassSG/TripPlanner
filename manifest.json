@@ -5,7 +5,7 @@
   "start_url": "https://script.google.com/macros/s/AKfycbyEhiEFqaFgLmjdIIiGU9LGU8tIE3Xw-MtTJrS9mpuN7C1AiV4Y845Bttaj4ilgiETb/exec/index.html",
   "display": "browser",
   "background_color": "#ffffff",
-  "theme_color": "#4285f4",
+  "theme_color": "#000000",
   "icons": [
     {
       "src": "https://s21-kling.klingai.com/bs2/upload-ylab-stunt-sgp/se/ai_portal_sgp_mmu_txt2img_aiweb_v15/53e5aa90-d7b3-457c-8217-5266265c1a5a_image.png?x-kcdn-pid=112372",
