@@ -3,7 +3,7 @@
   "short_name": "TripPlanner",
   "description": "แอปวางแผนการเดินทางของคุณ",
   "start_url": "https://script.google.com/macros/s/AKfycbyEhiEFqaFgLmjdIIiGU9LGU8tIE3Xw-MtTJrS9mpuN7C1AiV4Y845Bttaj4ilgiETb/exec/index.html",
-  "display": "standalone",
+  "display": "brower",
   "background_color": "#ffffff",
   "theme_color": "#4285f4",
   "icons": [
