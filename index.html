@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, maximum-scale=1.0, user-scalable=no">
     <base target="_top">
     <title>Trip-Planner</title>
     
@@ -46,19 +46,29 @@
             overflow: hidden;
         }
 
+        /* รูปเริ่มต้น (มือถือ) */
         .app-splash {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            /* เปลี่ยนพื้นหลังเป็นภาพใหม่ */
-            background: #4285f4 url("https://s21-kling.klingai.com/bs2/upload-ylab-stunt-sgp/se/ai_portal_sgp_mmu_txt2img_aiweb_v15/cfbaa167-4bf9-42f6-beed-23097d8d9997_image.png?x-kcdn-pid=112372")
+            background: #566573 
+                        url("https://s21-kling.klingai.com/bs2/upload-ylab-stunt-sgp/se/ai_portal_sgp_mmu_txt2img_aiweb_v15/cfbaa167-4bf9-42f6-beed-23097d8d9997_image.png?x-kcdn-pid=112372")
                         no-repeat center center;
-            /* ใช้ contain เพื่อให้เห็นรูปเต็มทั้งภาพ (อาจมีขอบว่างด้านข้าง/บนล่าง) */
-            background-size: cover;
+            background-size: contain;
             z-index: 9999;
             transition: opacity 0.5s ease-out;
+        }
+
+        /* เมื่อจอกว้าง >= 768px ให้เปลี่ยนไปใช้รูปสำหรับ Desktop */
+        @media (min-width: 768px) {
+            .app-splash {
+                background: #566573 
+                            url("https://s21-kling.klingai.com/bs2/upload-ylab-stunt-sgp/se/ai_portal_sgp_mmu_txt2img_aiweb_v15/62c343d3-14e2-43a2-a89a-ffa3e839425a_image.png?x-kcdn-pid=112372")
+                            no-repeat center center;
+                background-size: contain;
+            }
         }
 
         @supports (padding: max(0px)) {
@@ -73,10 +83,11 @@
 </head>
 <body>
 
-    <!-- ตัดแท็ก <img> ทิ้งไป แล้วใช้ background-image แทน -->
     <div class="app-splash" id="splash-screen"></div>
 
-    <iframe id="app-container" src="https://script.google.com/macros/s/AKfycbyEhiEFqaFgLmjdIIiGU9LGU8tIE3Xw-MtTJrS9mpuN7C1AiV4Y845Bttaj4ilgiETb/exec"></iframe>
+    <iframe id="app-container" 
+        src="https://script.google.com/macros/s/AKfycbyEhiEFqaFgLmjdIIiGU9LGU8tIE3Xw-MtTJrS9mpuN7C1AiV4Y845Bttaj4ilgiETb/exec">
+    </iframe>
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
