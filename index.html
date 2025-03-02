@@ -1,83 +1,88 @@
 <!DOCTYPE html>
-<html>
-   <head>
-      <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-      <base target="_top">
-      <title>Trip Planner</title>
-      
-      <!-- Favicon -->
-      <link rel="icon" type="image/png" sizes="192x192" href="https://s21-kling.klingai.com/bs2/upload-ylab-stunt-sgp/se/ai_portal_sgp_mmu_txt2img_aiweb_v15/53e5aa90-d7b3-457c-8217-5266265c1a5a_image.png?x-kcdn-pid=112372">
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+   <base target="_top">
+   <title>Trip Planner</title>
+   
+   <!-- Favicon -->
+   <link rel="icon" type="image/png" sizes="192x192" href="https://s21-kling.klingai.com/bs2/upload-ylab-stunt-sgp/se/ai_portal_sgp_mmu_txt2img_aiweb_v15/53e5aa90-d7b3-457c-8217-5266265c1a5a_image.png?x-kcdn-pid=112372">
 
-      <!-- Apple Touch Icon -->
-      <link rel="apple-touch-icon" sizes="180x180" href="https://s21-kling.klingai.com/bs2/upload-ylab-stunt-sgp/se/ai_portal_sgp_mmu_txt2img_aiweb_v15/53e5aa90-d7b3-457c-8217-5266265c1a5a_image.png?x-kcdn-pid=112372">
+   <!-- Apple Touch Icon -->
+   <link rel="apple-touch-icon" sizes="180x180" href="https://s21-kling.klingai.com/bs2/upload-ylab-stunt-sgp/se/ai_portal_sgp_mmu_txt2img_aiweb_v15/53e5aa90-d7b3-457c-8217-5266265c1a5a_image.png?x-kcdn-pid=112372">
 
-      <!-- Manifest -->
-      <link rel="manifest" href="/manifest.json">
+   <!-- Manifest -->
+   <link rel="manifest" href="/manifest.json">
 
-      <!-- Theme Color -->
-      <meta name="theme-color" content="#ffffff">
+   <!-- Theme Color -->
+   <meta name="theme-color" content="#ffffff">
 
-      <!-- Enable fullscreen for iOS -->
-      <meta name="apple-mobile-web-app-capable" content="yes">
-      <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+   <!-- Enable fullscreen for iOS -->
+   <meta name="apple-mobile-web-app-capable" content="yes">
+   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
-      <!-- Custom CSS -->
-      <style>
-         html, body {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            font-family: Arial, sans-serif;
-            background-color: #ffffff;
-         }
+   <!-- Custom CSS -->
+   <style>
+      html, body {
+         margin: 0;
+         padding: 0;
+         width: 100%;
+         height: 100%;
+         overflow: hidden;
+         font-family: Arial, sans-serif;
+         background-color: #ffffff;
+      }
 
-         iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border: 0;
-            -webkit-overflow-scrolling: touch; /* Enable smooth scrolling on iOS */
-         }
-      </style>
-   </head>
-   <body>
-      <iframe 
-         id="webframe"
-         src="https://script.google.com/macros/s/AKfycbyEhiEFqaFgLmjdIIiGU9LGU8tIE3Xw-MtTJrS9mpuN7C1AiV4Y845Bttaj4ilgiETb/exec"
-         allow="autoplay; fullscreen"
-         sandbox="allow-forms allow-same-origin allow-scripts allow-popups">
-      </iframe>
+      iframe {
+         position: absolute;
+         top: 0;
+         left: 0;
+         width: 100%;
+         height: 100%;
+         border: 0;
+         -webkit-overflow-scrolling: touch; /* Enable smooth scrolling on iOS */
+         z-index: 1; /* Ensure iframe is on top */
+         pointer-events: auto; /* Ensure touch events are captured */
+      }
+   </style>
+</head>
+<body>
+   <iframe 
+      id="webframe"
+      src="https://script.google.com/macros/s/AKfycbyEhiEFqaFgLmjdIIiGU9LGU8tIE3Xw-MtTJrS9mpuN7C1AiV4Y845Bttaj4ilgiETb/exec"
+      allow="autoplay; fullscreen"
+      sandbox="allow-forms allow-same-origin allow-scripts allow-popups allow-modals"
+      tabindex="0"> <!-- Add tabindex for focusability -->
+   </iframe>
 
-      <!-- iOS Focus and Keyboard Fix -->
-      <script>
-         document.addEventListener('touchstart', function(event) {
-            const iframe = document.getElementById('webframe');
-            if (iframe) {
-               iframe.contentWindow.focus();
-            }
+   <!-- JavaScript for Focus Handling -->
+   <script>
+      const iframe = document.getElementById('webframe');
+
+      // Force focus on touch events
+      document.addEventListener('touchstart', function() {
+         iframe.contentWindow.focus();
+      });
+
+      // Handle focus when iframe loads
+      iframe.addEventListener('load', function() {
+         const iframeDoc = iframe.contentWindow.document;
+
+         // Add click handler to focus iframe
+         iframeDoc.body.addEventListener('click', function() {
+            iframe.contentWindow.focus();
          });
 
-         // Ensure iframe gets focus properly on iOS
-         document.getElementById('webframe').addEventListener('load', function() {
-            const iframe = this;
-            iframe.contentWindow.document.body.addEventListener('click', function() {
-               iframe.contentWindow.focus();
-            });
-         });
-
-         // iOS Specific: Force keyboard to show
-         document.addEventListener('focusin', function(event) {
-            if (event.target.tagName === 'IFRAME') {
+         // Force focus on input elements when they gain focus
+         iframeDoc.addEventListener('focusin', function(e) {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
                setTimeout(() => {
-                  event.target.blur(); // Temporarily blur
-                  event.target.focus(); // Force refocus to show keyboard
-               }, 50);
+                  e.target.focus();
+               }, 0);
             }
          });
-      </script>
-   </body>
+      });
+   </script>
+</body>
 </html>
