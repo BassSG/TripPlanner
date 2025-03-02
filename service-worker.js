@@ -1,6 +1,4 @@
-
 const CACHE_NAME = 'trip-planner-cache-v1';
-
 const urlsToCache = [
   '/',
   '/index.html',
