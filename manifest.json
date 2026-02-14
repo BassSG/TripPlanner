@@ -2,7 +2,7 @@
   "name": "Trip-Planner",
   "short_name": "TripPlanner",
   "description": "วางแผนการเดินทางของคุณ",
-  "start_url": "https://script.google.com/macros/s/AKfycbyyMo9xsz65hV-pIug3i4vlK6_EHy4TxSjC4777wUdbbVdTFwK-oZ5TtXOZc7bFWHrCFw/exec",
+  "start_url": "https://script.google.com/macros/s/AKfycbzRKjxycQRR0B0rl8PW-3RbC2K1y0BFg5kpoElivfRYEaf1PaRrNfTqk2-JlFcJu2NN/exec",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#000000",
