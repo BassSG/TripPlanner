@@ -18,6 +18,6 @@
       "type": "image/png"
     }
   ],
-  "orientation": "portrait",
+  "orientation": "any",
   "prefer_related_applications": false
 }
