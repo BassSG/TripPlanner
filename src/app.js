@@ -47,7 +47,7 @@
   };
   function icon(name) {return '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true">' + (paths[name] || paths.activity) + '</svg>';}
   function hydrateIcons(parent = document) {parent.querySelectorAll('[data-icon]').forEach(el => {el.innerHTML = icon(el.dataset.icon);});}
-  const state = {view:'planner',plan:null,activeDay:0,saved:[],interests:new Set(),busy:false,generation:0,resume:null,backend:null,storageRaw:'',storageNotice:'',imageUrl:'',installPrompt:null};
+  const state = {view:'planner',plan:null,activeDay:0,saved:[],interests:new Set(),busy:false,generation:0,resume:null,backend:null,storageRaw:'',storageNotice:'',imageUrl:'',installPrompt:null,locationUrl:'',locationRequest:0};
   const savedKey = 'tripplanner:v8:plans';
   const draftKey = 'tripplanner:v8:draft';
   let toastTimer, elapsedTimer, connectionPromise, connectionWindow, connectionOrigin, connectionNonce, bridgeFrame;
@@ -110,6 +110,7 @@
     $('previewDays').textContent=M.fmt(days)+' วัน';$('previewPeople').textContent=M.fmt(people)+' คน';
     $('previewBudget').textContent=M.fmt(budget);$('previewPerPerson').textContent=people>0?'เฉลี่ย ฿'+M.fmt(Math.round(budget/people))+' / คน':'เพิ่มผู้ร่วมเดินทาง';
     $('origin').disabled=$('atDestination').checked;
+    $('mapSearchLink').href=input.destination.trim()?M.mapUrl(input.destination):'https://www.google.com/maps/';
   }
   function saveDraft() {const value={...formInput(),origin:$('origin').value,preferences:$('preferences').value,interests:[...state.interests],atDestination:$('atDestination').checked};delete value.clientId;storageSet(draftKey,JSON.stringify(value));}
   function restoreDraft() {
@@ -264,7 +265,9 @@
   }
   function renderPacking() {
     const p=state.plan,packed=new Set(p.packedItems);
-    $('packingPanel').innerHTML='<h3>พร้อมออกเดินทาง'+icon('bag')+'</h3>'+(p.packingList.length?p.packingList.map((item,index)=>'<label class="packing-item"><input type="checkbox" data-packed="'+index+'" '+(packed.has(item)?'checked':'')+'><span>'+esc(item)+'</span></label>').join(''):'<p class="small muted">ยังไม่มีรายการจัดกระเป๋าในแผนนี้</p>')+'<div class="packing-progress">เตรียมแล้ว '+p.packingList.filter(v=>packed.has(v)).length+' / '+p.packingList.length+' รายการ</div>';
+    let reminderUi='';
+    if(p.startDate){try{M.reminderIcs(p);reminderUi='<div class="calendar-reminder"><button class="button secondary" data-action="calendar-reminder">'+icon('calendar')+'เพิ่มเตือนก่อนทริปในปฏิทิน</button><small>เตือน 09:00 น. ก่อนเดินทาง 1 วัน · เปิดไฟล์ในแอปปฏิทินเพื่อยืนยัน</small></div>';}catch(error){reminderUi='<div class="calendar-reminder"><small>'+esc(error.message)+'</small></div>';}}
+    $('packingPanel').innerHTML='<h3>พร้อมออกเดินทาง'+icon('bag')+'</h3>'+(p.packingList.length?p.packingList.map((item,index)=>'<label class="packing-item"><input type="checkbox" data-packed="'+index+'" '+(packed.has(item)?'checked':'')+'><span>'+esc(item)+'</span></label>').join(''):'<p class="small muted">ยังไม่มีรายการจัดกระเป๋าในแผนนี้</p>')+'<div class="packing-progress">เตรียมแล้ว '+p.packingList.filter(v=>packed.has(v)).length+' / '+p.packingList.length+' รายการ</div>'+reminderUi;
   }
   function renderNotes() {
     const p=state.plan;const section=(title,values)=>values.length?'<div class="panel travel-note-panel"><h3>'+esc(title)+'</h3><ul>'+values.map(v=>'<li>'+esc(v)+'</li>').join('')+'</ul></div>':'';
@@ -282,7 +285,7 @@
   function openSaved(id) {if(state.busy){notice('กำลังสร้างแผนใหม่ กรุณารอหรือหยุดสร้างวันถัดไปก่อน');return;}const p=state.saved.find(v=>v.id===id);if(!p)return;state.plan=p;state.activeDay=0;renderPlan();screen('resultScreen');setView('planner');$('resultTitle').focus();$('resultScreen').scrollIntoView({block:'start',behavior:'auto'});}
 
   function dialog(title,html) {$('dialogTitle').textContent=title;$('dialogBody').innerHTML=html;if(!$('appDialog').open)$('appDialog').showModal();}
-  function closeDialog() {$('appDialog').close();if(state.imageUrl){URL.revokeObjectURL(state.imageUrl);state.imageUrl='';}}
+  function closeDialog() {if($('appDialog').open)$('appDialog').close();}
   function showConnection() {
     const s=state.backend;
     const status=!navigator.onLine?'กำลังออฟไลน์':!s?'ยังเชื่อมต่อ GAS ไม่ได้':!s.enabled?'พักการสร้างแผนใหม่':s.aiConfigured?'เชื่อมต่อ GAS แล้ว พบคีย์ AI':'เชื่อมต่อ GAS แล้ว ยังไม่มีคีย์ AI';
@@ -342,6 +345,58 @@
   }
   async function sharePlan() {if(!state.plan)return;const text=M.planText(state.plan);if(navigator.share){try{await navigator.share({title:state.plan.tripTitle,text});return;}catch(error){if(error.name==='AbortError')return;}}await copyPlan(text);}
 
+  function showLocation() {
+    state.locationRequest++;state.locationUrl='';
+    const embedded=window.top!==window.self;
+    const hostTip=embedded?'<p class="small muted">หากหน้า GAS จำกัดสิทธิ์ตำแหน่ง ให้<a href="'+esc(C.webUrl)+'" target="_blank" rel="noopener noreferrer">เปิด TripPlanner บน GitHub Pages</a> แล้วกดรับตำแหน่งอีกครั้ง</p>':'';
+    dialog('ส่งพิกัดปัจจุบันครั้งเดียว','<div class="location-card"><p>เมื่อกดรับตำแหน่ง เบราว์เซอร์จะขออนุญาตใช้ตำแหน่งของคุณ เราจะสร้างลิงก์ Google Maps เพื่อให้คุณเลือกแชร์เอง ไม่ติดตามต่อและไม่บันทึกพิกัดในแผนหรือ GAS</p><p class="small muted">ลิงก์เป็นพิกัด ณ เวลาที่กด ไม่อัปเดตตามการเดินทาง และผู้ที่ได้รับลิงก์เปิดดูภายหลังได้</p><div class="location-status" id="locationStatus" role="status">พร้อมขอตำแหน่งเมื่อคุณกดปุ่มด้านล่าง</div><button class="button primary" id="requestLocationButton" data-action="request-location">'+icon('navigation')+'รับตำแหน่งตอนนี้</button><div class="location-actions" id="locationActions" hidden><button class="button primary" data-action="share-location">'+icon('share')+'แชร์ลิงก์</button><button class="button secondary" data-action="copy-location">'+icon('copy')+'คัดลอกลิงก์</button><a class="button secondary" id="locationOpen" target="_blank" rel="noopener noreferrer">เปิด Google Maps ↗</a></div><input class="location-link" id="locationCopyFallback" type="text" readonly aria-label="ลิงก์ Google Maps สำหรับคัดลอกเอง" hidden>'+hostTip+'<p class="small muted">หากเบราว์เซอร์ไม่อนุญาตให้ใช้พิกัด ให้<a href="https://www.google.com/maps" target="_blank" rel="noopener noreferrer">เปิด Google Maps</a> แล้วแชร์ตำแหน่งจากแอปแผนที่</p></div>');
+  }
+  async function requestLocation() {
+    if(!$('appDialog').open)return;
+    const button=$('requestLocationButton'),status=$('locationStatus');
+    if(!button||!status)return;
+    state.locationUrl='';$('locationActions').hidden=true;$('locationCopyFallback').value='';$('locationCopyFallback').hidden=true;$('locationOpen').removeAttribute('href');
+    if(!window.isSecureContext||!navigator.geolocation){status.textContent='เบราว์เซอร์นี้ไม่รองรับตำแหน่งบนหน้านี้ กรุณาเปิดเว็บผ่าน HTTPS หรือเปิด Google Maps โดยตรง';return;}
+    const policy=document.permissionsPolicy||document.featurePolicy;
+    if(policy?.allowsFeature&&!policy.allowsFeature('geolocation')){status.textContent='หน้านี้ถูกจำกัดสิทธิ์ตำแหน่งจากการฝังหน้าเว็บ กรุณาเปิด TripPlanner บน GitHub Pages ผ่านลิงก์ด้านล่าง';return;}
+    const request=++state.locationRequest;button.disabled=true;status.textContent='กำลังรอตำแหน่งจากเบราว์เซอร์…';
+    try {
+      const position=await new Promise((resolve,reject)=>navigator.geolocation.getCurrentPosition(resolve,reject,{enableHighAccuracy:true,timeout:15000,maximumAge:0}));
+      if(request!==state.locationRequest||!$('appDialog').open)return;
+      const {latitude,longitude,accuracy}=position.coords;
+      if(!Number.isFinite(latitude)||!Number.isFinite(longitude)||latitude<-90||latitude>90||longitude<-180||longitude>180)throw new Error('พิกัดที่ได้รับไม่ถูกต้อง กรุณาลองใหม่');
+      const coords=latitude.toFixed(6)+','+longitude.toFixed(6);
+      state.locationUrl=M.mapUrl(coords);
+      $('locationOpen').href=state.locationUrl;$('locationCopyFallback').value=state.locationUrl;$('locationCopyFallback').hidden=false;
+      $('locationActions').hidden=false;
+      const accuracyText=Number.isFinite(accuracy)?' · ความคลาดเคลื่อนประมาณ '+M.fmt(Math.round(accuracy))+' เมตร':'';
+      status.textContent='ได้พิกัด '+coords+accuracyText+' · เลือกแชร์ลิงก์ด้านล่างเมื่อพร้อม';
+    } catch(error) {
+      if(request!==state.locationRequest||!$('appDialog').open)return;
+      const denied=window.top!==window.self?'หน้าเว็บที่เปิดแบบฝังอาจไม่อนุญาตตำแหน่ง ให้ลองเปิด TripPlanner บน GitHub Pages หรือเช็กสิทธิ์ตำแหน่งในเบราว์เซอร์':'คุณยังไม่ได้อนุญาตตำแหน่ง หากต้องการลองใหม่ให้เปิดสิทธิ์ตำแหน่งของเว็บนี้ในเบราว์เซอร์';
+      const messages={1:denied,2:'อุปกรณ์หาตำแหน่งไม่พบ ลองเปิด GPS หรือใช้ Google Maps โดยตรง',3:'หาตำแหน่งนานเกินไป กรุณาลองใหม่'};
+      status.textContent=messages[error.code]||error.message||'หาตำแหน่งไม่สำเร็จ กรุณาลองใหม่';
+    } finally {if(request===state.locationRequest&&$('appDialog').open)button.disabled=false;}
+  }
+  async function copyLocation() {
+    if(!state.locationUrl)return;
+    const url=state.locationUrl;
+    try{await navigator.clipboard.writeText(url);if(state.locationUrl===url&&$('appDialog').open)$('locationStatus').textContent='คัดลอกลิงก์ตำแหน่งแล้ว ส่งให้คนในทริปได้เลย';}
+    catch{if(state.locationUrl!==url||!$('appDialog').open)return;const input=$('locationCopyFallback');input.hidden=false;input.focus();input.select();$('locationStatus').textContent='คัดลอกอัตโนมัติไม่ได้ กรุณาคัดลอกลิงก์ที่เลือกไว้ในช่องด้านล่าง';}
+  }
+  async function shareLocation() {
+    if(!state.locationUrl)return;
+    const url=state.locationUrl;
+    if(navigator.share){try{await navigator.share({title:'ตำแหน่งปัจจุบันของฉัน',url});if(state.locationUrl===url&&$('appDialog').open)$('locationStatus').textContent='ส่งลิงก์ตำแหน่งแล้ว';return;}catch(error){if(error.name==='AbortError')return;}}
+    await copyLocation();
+  }
+  function exportCalendarReminder() {
+    if(!state.plan)return;
+    const name='TripPlanner-reminder-'+state.plan.startDate+'.ics';
+    download(M.reminderIcs(state.plan),name,'text/calendar;charset=utf-8');
+    notice('ดาวน์โหลดไฟล์เตือนแล้ว เปิดไฟล์และเพิ่มลงปฏิทินเพื่อรับแจ้งเตือน');
+  }
+
   async function exportImage() {
     if(!state.plan)return;const plan=state.plan,day=plan.days[state.activeDay];dialog('ภาพแผนวันที่ '+day.dayNumber,'<p class="image-export-status">กำลังจัดภาพรายวัน…</p>');
     try {
@@ -383,6 +438,11 @@
     if(action==='export')showJsonExport();
     if(action==='copy'&&state.plan)await copyPlan();
     if(action==='share')await sharePlan();
+    if(action==='location')showLocation();
+    if(action==='request-location')await requestLocation();
+    if(action==='copy-location')await copyLocation();
+    if(action==='share-location')await shareLocation();
+    if(action==='calendar-reminder')exportCalendarReminder();
     if(action==='image')await exportImage();
     if(action==='print'&&state.plan)window.print();
     if(action==='import')$('importFile').click();
@@ -414,7 +474,7 @@
   $('savedSearch').addEventListener('input',renderSaved);
   $('importFile').addEventListener('change',event=>importPlans(event.target.files[0]));
   $('appDialog').addEventListener('click',event=>{if(event.target===$('appDialog')){const rect=$('appDialog').getBoundingClientRect();if(event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom)closeDialog();}});
-  $('appDialog').addEventListener('cancel',()=>{if(state.imageUrl){URL.revokeObjectURL(state.imageUrl);state.imageUrl='';}});
+  $('appDialog').addEventListener('close',()=>{state.locationRequest++;state.locationUrl='';$('dialogBody').replaceChildren();if(state.imageUrl){URL.revokeObjectURL(state.imageUrl);state.imageUrl='';}});
   window.addEventListener('offline',updateNetwork);
   window.addEventListener('online',()=>{updateNetwork();if(state.backend?.aiConfigured&&state.backend.enabled)$('connectionBanner').hidden=true;connect().catch(()=>{});});
   window.addEventListener('beforeunload',event=>{if(state.busy){event.preventDefault();event.returnValue='';}});
