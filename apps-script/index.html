@@ -12,8 +12,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>TripPlanner — วางแผนดี เที่ยวได้มากกว่า</title>
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTQiIGZpbGw9IiMwZDE2MjUiLz48cGF0aCBkPSJNMTYgNDYgQzIzIDUxIDI1IDQzIDI5IDM1IiBzdHJva2U9IiNjZmI4ODQiIHN0cm9rZS13aWR0aD0iMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgPGNpcmNsZSBjeD0iMTYiIGN5PSI0NiIgcj0iMyIgZmlsbD0iI2NmYjg4NCIvPgogIDxwYXRoIGQ9Ik0xNCAyOCBMNTAgMTQgTDM1IDUwIEwyOSAzNSBaIiBmaWxsPSIjODRiOWUzIi8+CiAgPHBhdGggZD0iTTI5IDM1IEw1MCAxNCBMMzUgNTAgWiIgZmlsbD0iIzQ3N2JhOCIvPgogIDxwYXRoIGQ9Ik0yOSAzNSBMNTAgMTQiIHN0cm9rZT0iIzBkMTYyNSIgc3Ryb2tlLXdpZHRoPSIxLjQiLz48L3N2Zz4K" type="image/svg+xml">
-  <link rel="icon" href="https://basssg.github.io/TripPlanner/assets/favicon.ico?v=63c4ded04a0c" sizes="16x16 32x32 48x48">
-  <link rel="apple-touch-icon" href="https://basssg.github.io/TripPlanner/assets/icon-180.png?v=63c4ded04a0c">
+  <link rel="icon" href="https://basssg.github.io/TripPlanner/assets/favicon.ico?v=4ef34ab2e020" sizes="16x16 32x32 48x48">
+  <link rel="apple-touch-icon" href="https://basssg.github.io/TripPlanner/assets/icon-180.png?v=4ef34ab2e020">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -357,6 +357,73 @@
   .activity-stop { display:none; }
 }
 
+/* Location tools share the trip's navy surfaces and reserved gold accents. */
+@media screen {
+  .map-search-entry {
+    min-width:0; margin:-5px 0 25px; padding:15px 17px;
+    border:1px solid #39536e; border-left:3px solid #cfb884; border-radius:12px;
+    background:linear-gradient(115deg,#1c3048,#17263a 75%);
+  }
+  .map-search-entry > div { display:flex; flex-wrap:wrap; align-items:center; gap:9px; }
+  .map-search-entry .button {
+    min-width:0; min-height:44px; padding:9px 12px; border-color:#4b6b8b;
+    background:#223a55; color:#d5e9fa; font-size:12px; line-height:1.4;
+  }
+  .map-search-entry .button:hover { background:#2b4b6c; border-color:#7da8cf; }
+  .map-search-entry .button + .button { border-color:#76694e; background:#302e2d; color:#e2d0a9; }
+  .map-search-entry .button + .button:hover { background:#423a30; border-color:#b6a173; }
+  .map-search-entry .icon { width:16px; height:16px; }
+  .map-search-entry small { display:block; margin-top:10px; color:#aebed0; font-size:12px; line-height:1.7; }
+  .location-share-button { border-color:#76694e; background:#282b31; color:#e0cda2; }
+  .location-share-button:hover { border-color:#b8a475; background:#393630; }
+  .location-share-button .icon { color:#cfb884; }
+  .location-card {
+    min-width:0; padding:19px; border:1px solid #3b5675; border-radius:15px;
+    background:linear-gradient(145deg,#1d3149,#16253a 78%);
+    box-shadow:inset 0 1px 0 #ffffff0b;
+  }
+  .location-status {
+    display:flex; align-items:flex-start; gap:10px; min-width:0;
+    padding:13px 14px; border:1px solid #476585; border-radius:10px;
+    background:#122238; color:#d7e6f3; font-size:12px; line-height:1.75;
+    overflow-wrap:anywhere;
+  }
+  .location-status::before {
+    content:''; flex:none; width:8px; height:8px; margin-top:7px; border-radius:50%;
+    background:#cfb884; box-shadow:0 0 0 4px #cfb88420;
+  }
+  .location-actions { display:flex; flex-wrap:wrap; gap:9px; margin-top:16px; }
+  .location-actions > .button,.location-actions > button,.location-actions > a {
+    display:inline-flex; align-items:center; justify-content:center; gap:7px;
+    flex:1 1 145px; min-width:0; min-height:44px; white-space:normal;
+    text-align:center; overflow-wrap:anywhere;
+  }
+  .location-actions .secondary { border-color:#577493; background:#223b55; color:#d9eafb; }
+  .location-actions .secondary:hover { background:#2b4b6c; }
+  .location-link {
+    display:block; width:100%; min-height:44px; margin-top:13px; padding:10px 12px;
+    border:1px solid #4a6887; border-radius:9px; background:#0f1d2e;
+    color:#b9d5ed; font-size:13px; text-overflow:ellipsis;
+  }
+  .location-link:focus { outline:2px solid #cfb884; outline-offset:2px; }
+  .location-card > .button { min-height:44px; margin-top:14px; }
+  .location-card > .small { font-size:12px; line-height:1.7; }
+  .location-card > .small a { margin-left:4px; color:#a8d2f3; }
+  .calendar-reminder { margin-top:17px; padding-top:17px; border-top:1px solid var(--line); }
+  .calendar-reminder .button { width:100%; min-height:44px; padding:10px 12px; white-space:normal; text-align:left; justify-content:flex-start; }
+  .calendar-reminder .icon { flex:none; width:16px; height:16px; }
+  .calendar-reminder small { display:block; margin-top:8px; color:var(--muted); font-size:12px; line-height:1.6; }
+}
+@media screen and (max-width:760px) {
+  .map-search-entry { margin:0 0 23px; padding:14px; }
+  .map-search-entry > div { display:grid; grid-template-columns:1fr; }
+  .map-search-entry .button { width:100%; justify-content:flex-start; font-size:12px; }
+  .result-action-controls > .location-share-button { flex:1 1 100%; width:100%; }
+  .location-card { padding:15px; }
+  .location-actions { flex-direction:column; }
+  .location-actions > .button,.location-actions > button,.location-actions > a { flex:0 0 auto; width:100%; }
+}
+
 </style>
 </head>
 <body>
@@ -375,7 +442,7 @@
         <button class="nav-item" data-action="guide"><span data-icon="help"></span>ใช้งานอย่างไร</button>
       </nav>
       <div class="sidebar-note"><span data-icon="route"></span><p>วางแผนให้พอดีกับคุณ<small>จุดหมาย งบ และสไตล์ที่ชอบ<br>ที่เหลือให้เราช่วยคิด</small></p><div class="note-route" aria-hidden="true">· · · · · · · · ↗</div></div>
-      <div class="sidebar-bottom"><button class="nav-item" data-action="connection"><span data-icon="settings"></span>การเชื่อมต่อ & API</button><div class="sidebar-footer"><span class="status-dot" id="backendDot"></span><span id="backendLabel">กำลังเชื่อมต่อ</span><span class="version">v8.2</span></div></div>
+      <div class="sidebar-bottom"><button class="nav-item" data-action="connection"><span data-icon="settings"></span>การเชื่อมต่อ & API</button><div class="sidebar-footer"><span class="status-dot" id="backendDot"></span><span id="backendLabel">กำลังเชื่อมต่อ</span><span class="version">v8.3</span></div></div>
     </aside>
     <div class="workspace">
       <header class="topbar"><div class="breadcrumb"><span class="mobile-brand" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
@@ -398,6 +465,7 @@
             <div class="planner-grid">
               <form id="tripForm" class="panel form-panel">
                 <div class="form-section"><div class="form-section-title"><span class="step-number">01</span><h3>จุดหมายของทริป</h3><span data-icon="pin"></span></div><div class="field-grid"><label class="field">เริ่มเดินทางจาก<span class="input-wrap"><span data-icon="navigation"></span><input id="origin" name="origin" value="กรุงเทพมหานคร" required maxlength="120" autocomplete="off" placeholder="จังหวัดหรือเมืองต้นทาง"></span></label><label class="field">อยากไปที่ไหน <span class="required">*</span><span class="input-wrap"><span data-icon="pin"></span><input id="destination" name="destination" required minlength="2" maxlength="120" autocomplete="off" placeholder="เช่น เชียงใหม่, โตเกียว"></span></label></div><label class="inline-checkbox"><input type="checkbox" id="atDestination">อยู่ที่ปลายทางแล้ว ไม่ต้องวางแผนเดินทางไปกลับ</label><div class="suggestions"><span>ยังคิดไม่ออก?</span><button type="button" data-destination="เชียงใหม่">เชียงใหม่ ↗</button><button type="button" data-destination="กาญจนบุรี">กาญจนบุรี ↗</button><button type="button" data-destination="กระบี่">กระบี่ ↗</button><button type="button" data-destination="โตเกียว ญี่ปุ่น">โตเกียว ↗</button></div></div>
+                <div class="map-search-entry"><div><a class="button secondary" id="mapSearchLink" href="https://www.google.com/maps" target="_blank" rel="noopener noreferrer"><span data-icon="search"></span>ค้นจุดหมายใน Google Maps ↗</a><button type="button" class="button secondary" data-action="location"><span data-icon="navigation"></span>ส่งพิกัดตอนนี้</button></div><small>ค้นชื่อเมืองหรือสถานที่ใน Maps แล้วนำชื่อมาใส่ในช่องจุดหมายด้านบน</small></div>
                 <div class="form-section"><div class="form-section-title"><span class="step-number">02</span><h3>เวลา งบ และเพื่อนร่วมทาง</h3><span data-icon="calendar"></span></div><div class="field-grid"><label class="field">วันเริ่มเดินทาง <span class="optional">ไม่บังคับ</span><span class="input-wrap"><input id="startDate" name="startDate" type="date"></span></label><label class="field">จำนวนวัน<span class="input-wrap"><span data-icon="calendar"></span><input id="days" name="days" type="number" inputmode="numeric" min="1" max="30" step="1" value="3" required><span class="input-unit">วัน</span></span></label><label class="field budget-field">งบรวมทั้งทริป <span class="required">*</span><span class="input-wrap"><span class="currency-symbol">฿</span><input id="budget" name="budget" type="number" inputmode="decimal" min="500" max="10000000" step="1" value="10000" required><span class="input-unit">บาท</span></span><small>รวมทุกคน ที่พัก อาหาร และการเดินทาง</small></label><div class="field travelers-field"><span class="field-label">ผู้ร่วมเดินทาง</span><div class="travelers"><label class="traveler"><span>ผู้ใหญ่</span><span class="stepper"><button type="button" data-step="people:-1" aria-label="ลดผู้ใหญ่">−</button><input id="people" name="people" type="number" inputmode="numeric" min="1" max="50" step="1" value="2" required aria-label="จำนวนผู้ใหญ่"><button type="button" data-step="people:1" aria-label="เพิ่มผู้ใหญ่">+</button></span></label><label class="traveler"><span>เด็ก</span><span class="stepper"><button type="button" data-step="children:-1" aria-label="ลดเด็ก">−</button><input id="children" name="children" type="number" inputmode="numeric" min="0" max="50" step="1" value="0" required aria-label="จำนวนเด็ก"><button type="button" data-step="children:1" aria-label="เพิ่มเด็ก">+</button></span></label></div></div></div></div>
                 <div class="form-section"><div class="form-section-title"><span class="step-number">03</span><h3>เที่ยวในสไตล์ของคุณ</h3><span data-icon="route"></span></div><fieldset class="mode-fieldset"><legend>เดินทางแบบไหน</legend><div class="travel-modes"><label><input type="radio" name="travelMode" value="car" checked><span><span data-icon="car"></span>รถยนต์</span></label><label><input type="radio" name="travelMode" value="public"><span><span data-icon="train"></span>ขนส่งสาธารณะ</span></label><label><input type="radio" name="travelMode" value="flight"><span><span data-icon="plane"></span>เครื่องบิน</span></label><label><input type="radio" name="travelMode" value="motorcycle"><span><span data-icon="bike"></span>มอเตอร์ไซค์</span></label><label><input type="radio" name="travelMode" value="flexible"><span><span data-icon="route"></span>ให้ช่วยเลือก</span></label></div></fieldset><fieldset class="interest-fieldset"><legend>อะไรทำให้ทริปนี้เป็นคุณ <span class="optional">เลือกได้หลายอย่าง</span></legend><div class="interest-chips"><button type="button" data-interest="ธรรมชาติ" aria-pressed="false">🌿 ธรรมชาติ</button><button type="button" data-interest="อาหารท้องถิ่น" aria-pressed="false">🍜 อาหารท้องถิ่น</button><button type="button" data-interest="คาเฟ่" aria-pressed="false">☕ คาเฟ่</button><button type="button" data-interest="วัฒนธรรม" aria-pressed="false">🏛 วัฒนธรรม</button><button type="button" data-interest="ถ่ายรูป" aria-pressed="false">📷 ถ่ายรูป</button><button type="button" data-interest="ทริปครอบครัว" aria-pressed="false">🧸 ครอบครัว</button></div></fieldset><label class="field notes-field">มีอะไรอยากบอกเราอีกไหม <span class="optional">ไม่บังคับ</span><textarea id="preferences" name="preferences" rows="3" maxlength="1000" placeholder="เช่น ไม่อยากตื่นเช้า มีผู้สูงอายุ ขอที่พักใกล้เมือง หรืออาหารที่แพ้"></textarea></label></div>
                 <div class="form-error" id="formError" role="alert" hidden></div><div class="form-submit"><button type="submit" class="button primary generate-button" id="generateBtn"><span data-icon="route"></span><span id="generateLabel">สร้างแผนทริปของฉัน</span><span data-icon="arrow-right"></span></button><p><span data-icon="lock"></span>คีย์ API อยู่ใน GAS · แผนบันทึกในอุปกรณ์ของคุณ</p></div>
@@ -434,7 +502,7 @@
                 <a class="button primary result-view-plan" href="#dayNavigation">ดูแผนรายวัน <span data-icon="arrow-right"></span></a>
               </div>
             </header>
-            <div class="result-actions"><span class="saved-state" id="savedState"></span><div class="result-action-controls"><button class="button small-button secondary" data-action="edit"><span data-icon="edit"></span>แก้ไขแผน</button><button class="button small-button secondary" data-action="share"><span data-icon="share"></span>แชร์</button><details class="result-export"><summary class="button small-button secondary"><span data-icon="download"></span>บันทึก / ส่งออก <span class="export-chevron" aria-hidden="true">⌄</span></summary><div class="result-export-menu"><button data-action="copy"><span data-icon="copy"></span>คัดลอกข้อความ</button><button data-action="image"><span data-icon="image"></span>ภาพรายวัน</button><button data-action="print"><span data-icon="print"></span>พิมพ์ / PDF</button><button data-action="export"><span data-icon="download"></span>ไฟล์ JSON</button></div></details></div></div>
+            <div class="result-actions"><span class="saved-state" id="savedState"></span><div class="result-action-controls"><button class="button small-button secondary" data-action="edit"><span data-icon="edit"></span>แก้ไขแผน</button><button class="button small-button secondary" data-action="share"><span data-icon="share"></span>แชร์แผน</button><button class="button small-button secondary location-share-button" data-action="location"><span data-icon="navigation"></span>ส่งพิกัดตอนนี้</button><details class="result-export"><summary class="button small-button secondary"><span data-icon="download"></span>บันทึก / ส่งออก <span class="export-chevron" aria-hidden="true">⌄</span></summary><div class="result-export-menu"><button data-action="copy"><span data-icon="copy"></span>คัดลอกข้อความ</button><button data-action="image"><span data-icon="image"></span>ภาพรายวัน</button><button data-action="print"><span data-icon="print"></span>พิมพ์ / PDF</button><button data-action="export"><span data-icon="download"></span>ไฟล์ JSON</button></div></details></div></div>
             <div id="planWarnings"></div>
             <div class="trip-stats" id="tripStats"></div>
             <div class="results-grid"><div class="itinerary"><div class="day-navigation" id="dayNavigation"><div class="day-nav-intro"><span class="eyebrow">THE DAILY ROUTE</span><strong>แผนเที่ยวรายวัน</strong></div><div class="day-tabs" role="tablist" aria-label="เลือกวันเดินทาง" id="dayTabs"></div></div><div id="dayPanels"></div><div id="travelNotes"></div></div><aside class="result-aside"><div class="panel budget-panel" id="budgetPanel"></div><div class="panel packing-panel" id="packingPanel"></div></aside></div>
@@ -447,7 +515,7 @@
     </div>
   </div>
   <nav class="mobile-nav" aria-label="เมนูมือถือ"><button class="active" data-view="planner"><span data-icon="compass"></span>วางแผน</button><button data-view="saved"><span data-icon="bookmark"></span>ทริปของฉัน</button><button data-action="connection"><span data-icon="settings"></span>การเชื่อมต่อ</button></nav>
-  <dialog id="appDialog"><div class="dialog-top"><h2 id="dialogTitle"></h2><button class="icon-button" data-action="close-dialog" aria-label="ปิดหน้าต่าง"><span data-icon="close"></span></button></div><div id="dialogBody"></div></dialog>
+  <dialog id="appDialog" aria-labelledby="dialogTitle"><div class="dialog-top"><h2 id="dialogTitle"></h2><button class="icon-button" data-action="close-dialog" aria-label="ปิดหน้าต่าง"><span data-icon="close"></span></button></div><div id="dialogBody"></div></dialog>
   <input type="file" id="importFile" accept="application/json,.json" hidden>
   <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
   <noscript><div class="noscript">กรุณาเปิด JavaScript เพื่อสร้างและอ่านแผนการเดินทาง</div></noscript>
@@ -455,10 +523,11 @@
 /** PUBLIC SETTINGS ONLY. API secrets go in GAS Script Properties (see apps-script/Code.gs). */
 window.TRIP_APP_CONFIG = Object.freeze({
   appName: 'TripPlanner',
-  version: '8.2.0',
+  version: '8.3.0',
   gasUrl: 'https://script.google.com/macros/s/AKfycbzQvAenA1EFR85qv5CTy88BxJIR0EL0KKm7GWkY5lFnLWZJdQBpsV7rcjGumQyYCxvfgw/exec',
   gasEditorUrl: 'https://script.google.com/home/projects/1KMuYaHImc-CAzdRQwJye8kYO27sYch9QSjqb-_OaSDkfJFHZNTonprU6/edit',
   githubUrl: 'https://github.com/BassSG/TripPlanner',
+  webUrl: 'https://basssg.github.io/TripPlanner/',
   maxSavedPlans: 30,
   connectTimeoutMs: 30000,
   requestTimeoutMs: 300000
@@ -579,7 +648,56 @@ window.TRIP_APP_CONFIG = Object.freeze({
     if (plan.sources.length) lines.push('','แหล่งข้อมูลประกอบ:',...plan.sources.map(s => s.title + ' ' + s.url));
     return lines.join('\n');
   }
-  root.TripModel = {categories,fmt,escape,safeUrl,mapUrl,sourceMatchesDestination,dayExpense,normalizePlan,validateInput,dateForDay,planText};
+  function reminderIcs(plan, now = new Date()) {
+    const startDate = plan && plan.startDate;
+    if (typeof startDate !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(startDate)) {
+      throw new Error('กรุณาระบุวันเริ่มเดินทางที่ถูกต้องก่อนเพิ่มการแจ้งเตือน');
+    }
+    const tripDate = new Date(startDate + 'T00:00:00.000Z');
+    if (!Number.isFinite(tripDate.getTime()) || tripDate.toISOString().slice(0, 10) !== startDate) {
+      throw new Error('วันเริ่มเดินทางไม่ถูกต้อง กรุณาตรวจวันที่อีกครั้ง');
+    }
+    // Thailand is UTC+7: 09:00 on the previous calendar day is 02:00 UTC.
+    const reminder = new Date(tripDate.getTime() - 86400000);
+    reminder.setUTCHours(2, 0, 0, 0);
+    if (!(now instanceof Date) || !Number.isFinite(now.getTime())) {
+      throw new Error('ไม่สามารถตรวจเวลาปัจจุบันเพื่อสร้างการแจ้งเตือนได้');
+    }
+    if (reminder.getTime() <= now.getTime()) {
+      throw new Error('เวลาแจ้งเตือน 09:00 น. ก่อนวันเดินทางผ่านไปแล้ว กรุณาเลือกวันเดินทางใหม่');
+    }
+    const utc = date => date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
+    const cleanText = value => String(value ?? '').replace(/\r\n|\r|\n/g, '\n')
+      .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '')
+      .replace(/\\/g, '\\\\').replace(/\n/g, '\\n').replace(/;/g, '\\;').replace(/,/g, '\\,');
+    const encoder = new TextEncoder();
+    const fold = line => {
+      let result = '', bytes = 0;
+      for (const character of line) {
+        const length = encoder.encode(character).length;
+        if (bytes + length > 75) { result += '\r\n '; bytes = 1; }
+        result += character;
+        bytes += length;
+      }
+      return result;
+    };
+    const destination = str(plan.destination, 120) || 'จุดหมายของคุณ';
+    const title = str(plan.tripTitle, 200) || 'ทริป ' + destination;
+    const summary = 'เตรียมเดินทาง: ' + title;
+    const description = 'พรุ่งนี้เริ่มเดินทางไป' + destination + ' (' + startDate + ')\nเปิด TripPlanner เพื่อตรวจแผนและรายการจัดกระเป๋า';
+    const identifier = String(plan.id || '').replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 80) || 'trip';
+    const uid = 'reminder-' + identifier + '-' + startDate.replace(/-/g, '') + '@tripplanner.basssg.github.io';
+    const lines = [
+      'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//TripPlanner//Trip Reminder//TH', 'CALSCALE:GREGORIAN',
+      'BEGIN:VEVENT', 'UID:' + uid, 'DTSTAMP:' + utc(now),
+      'DTSTART:' + utc(reminder), 'DTEND:' + utc(new Date(reminder.getTime() + 15 * 60000)),
+      'SUMMARY:' + cleanText(summary), 'DESCRIPTION:' + cleanText(description),
+      'BEGIN:VALARM', 'ACTION:DISPLAY', 'DESCRIPTION:' + cleanText(summary),
+      'TRIGGER;VALUE=DATE-TIME:' + utc(reminder), 'END:VALARM', 'END:VEVENT', 'END:VCALENDAR'
+    ];
+    return lines.map(fold).join('\r\n') + '\r\n';
+  }
+  root.TripModel = {categories,fmt,escape,safeUrl,mapUrl,sourceMatchesDestination,dayExpense,normalizePlan,validateInput,dateForDay,planText,reminderIcs};
 })(typeof window !== 'undefined' ? window : globalThis);
 
 </script>
@@ -633,7 +751,7 @@ window.TRIP_APP_CONFIG = Object.freeze({
   };
   function icon(name) {return '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true">' + (paths[name] || paths.activity) + '</svg>';}
   function hydrateIcons(parent = document) {parent.querySelectorAll('[data-icon]').forEach(el => {el.innerHTML = icon(el.dataset.icon);});}
-  const state = {view:'planner',plan:null,activeDay:0,saved:[],interests:new Set(),busy:false,generation:0,resume:null,backend:null,storageRaw:'',storageNotice:'',imageUrl:'',installPrompt:null};
+  const state = {view:'planner',plan:null,activeDay:0,saved:[],interests:new Set(),busy:false,generation:0,resume:null,backend:null,storageRaw:'',storageNotice:'',imageUrl:'',installPrompt:null,locationUrl:'',locationRequest:0};
   const savedKey = 'tripplanner:v8:plans';
   const draftKey = 'tripplanner:v8:draft';
   let toastTimer, elapsedTimer, connectionPromise, connectionWindow, connectionOrigin, connectionNonce, bridgeFrame;
@@ -696,6 +814,7 @@ window.TRIP_APP_CONFIG = Object.freeze({
     $('previewDays').textContent=M.fmt(days)+' วัน';$('previewPeople').textContent=M.fmt(people)+' คน';
     $('previewBudget').textContent=M.fmt(budget);$('previewPerPerson').textContent=people>0?'เฉลี่ย ฿'+M.fmt(Math.round(budget/people))+' / คน':'เพิ่มผู้ร่วมเดินทาง';
     $('origin').disabled=$('atDestination').checked;
+    $('mapSearchLink').href=input.destination.trim()?M.mapUrl(input.destination):'https://www.google.com/maps/';
   }
   function saveDraft() {const value={...formInput(),origin:$('origin').value,preferences:$('preferences').value,interests:[...state.interests],atDestination:$('atDestination').checked};delete value.clientId;storageSet(draftKey,JSON.stringify(value));}
   function restoreDraft() {
@@ -850,7 +969,9 @@ window.TRIP_APP_CONFIG = Object.freeze({
   }
   function renderPacking() {
     const p=state.plan,packed=new Set(p.packedItems);
-    $('packingPanel').innerHTML='<h3>พร้อมออกเดินทาง'+icon('bag')+'</h3>'+(p.packingList.length?p.packingList.map((item,index)=>'<label class="packing-item"><input type="checkbox" data-packed="'+index+'" '+(packed.has(item)?'checked':'')+'><span>'+esc(item)+'</span></label>').join(''):'<p class="small muted">ยังไม่มีรายการจัดกระเป๋าในแผนนี้</p>')+'<div class="packing-progress">เตรียมแล้ว '+p.packingList.filter(v=>packed.has(v)).length+' / '+p.packingList.length+' รายการ</div>';
+    let reminderUi='';
+    if(p.startDate){try{M.reminderIcs(p);reminderUi='<div class="calendar-reminder"><button class="button secondary" data-action="calendar-reminder">'+icon('calendar')+'เพิ่มเตือนก่อนทริปในปฏิทิน</button><small>เตือน 09:00 น. ก่อนเดินทาง 1 วัน · เปิดไฟล์ในแอปปฏิทินเพื่อยืนยัน</small></div>';}catch(error){reminderUi='<div class="calendar-reminder"><small>'+esc(error.message)+'</small></div>';}}
+    $('packingPanel').innerHTML='<h3>พร้อมออกเดินทาง'+icon('bag')+'</h3>'+(p.packingList.length?p.packingList.map((item,index)=>'<label class="packing-item"><input type="checkbox" data-packed="'+index+'" '+(packed.has(item)?'checked':'')+'><span>'+esc(item)+'</span></label>').join(''):'<p class="small muted">ยังไม่มีรายการจัดกระเป๋าในแผนนี้</p>')+'<div class="packing-progress">เตรียมแล้ว '+p.packingList.filter(v=>packed.has(v)).length+' / '+p.packingList.length+' รายการ</div>'+reminderUi;
   }
   function renderNotes() {
     const p=state.plan;const section=(title,values)=>values.length?'<div class="panel travel-note-panel"><h3>'+esc(title)+'</h3><ul>'+values.map(v=>'<li>'+esc(v)+'</li>').join('')+'</ul></div>':'';
@@ -868,7 +989,7 @@ window.TRIP_APP_CONFIG = Object.freeze({
   function openSaved(id) {if(state.busy){notice('กำลังสร้างแผนใหม่ กรุณารอหรือหยุดสร้างวันถัดไปก่อน');return;}const p=state.saved.find(v=>v.id===id);if(!p)return;state.plan=p;state.activeDay=0;renderPlan();screen('resultScreen');setView('planner');$('resultTitle').focus();$('resultScreen').scrollIntoView({block:'start',behavior:'auto'});}
 
   function dialog(title,html) {$('dialogTitle').textContent=title;$('dialogBody').innerHTML=html;if(!$('appDialog').open)$('appDialog').showModal();}
-  function closeDialog() {$('appDialog').close();if(state.imageUrl){URL.revokeObjectURL(state.imageUrl);state.imageUrl='';}}
+  function closeDialog() {if($('appDialog').open)$('appDialog').close();}
   function showConnection() {
     const s=state.backend;
     const status=!navigator.onLine?'กำลังออฟไลน์':!s?'ยังเชื่อมต่อ GAS ไม่ได้':!s.enabled?'พักการสร้างแผนใหม่':s.aiConfigured?'เชื่อมต่อ GAS แล้ว พบคีย์ AI':'เชื่อมต่อ GAS แล้ว ยังไม่มีคีย์ AI';
@@ -928,6 +1049,58 @@ window.TRIP_APP_CONFIG = Object.freeze({
   }
   async function sharePlan() {if(!state.plan)return;const text=M.planText(state.plan);if(navigator.share){try{await navigator.share({title:state.plan.tripTitle,text});return;}catch(error){if(error.name==='AbortError')return;}}await copyPlan(text);}
 
+  function showLocation() {
+    state.locationRequest++;state.locationUrl='';
+    const embedded=window.top!==window.self;
+    const hostTip=embedded?'<p class="small muted">หากหน้า GAS จำกัดสิทธิ์ตำแหน่ง ให้<a href="'+esc(C.webUrl)+'" target="_blank" rel="noopener noreferrer">เปิด TripPlanner บน GitHub Pages</a> แล้วกดรับตำแหน่งอีกครั้ง</p>':'';
+    dialog('ส่งพิกัดปัจจุบันครั้งเดียว','<div class="location-card"><p>เมื่อกดรับตำแหน่ง เบราว์เซอร์จะขออนุญาตใช้ตำแหน่งของคุณ เราจะสร้างลิงก์ Google Maps เพื่อให้คุณเลือกแชร์เอง ไม่ติดตามต่อและไม่บันทึกพิกัดในแผนหรือ GAS</p><p class="small muted">ลิงก์เป็นพิกัด ณ เวลาที่กด ไม่อัปเดตตามการเดินทาง และผู้ที่ได้รับลิงก์เปิดดูภายหลังได้</p><div class="location-status" id="locationStatus" role="status">พร้อมขอตำแหน่งเมื่อคุณกดปุ่มด้านล่าง</div><button class="button primary" id="requestLocationButton" data-action="request-location">'+icon('navigation')+'รับตำแหน่งตอนนี้</button><div class="location-actions" id="locationActions" hidden><button class="button primary" data-action="share-location">'+icon('share')+'แชร์ลิงก์</button><button class="button secondary" data-action="copy-location">'+icon('copy')+'คัดลอกลิงก์</button><a class="button secondary" id="locationOpen" target="_blank" rel="noopener noreferrer">เปิด Google Maps ↗</a></div><input class="location-link" id="locationCopyFallback" type="text" readonly aria-label="ลิงก์ Google Maps สำหรับคัดลอกเอง" hidden>'+hostTip+'<p class="small muted">หากเบราว์เซอร์ไม่อนุญาตให้ใช้พิกัด ให้<a href="https://www.google.com/maps" target="_blank" rel="noopener noreferrer">เปิด Google Maps</a> แล้วแชร์ตำแหน่งจากแอปแผนที่</p></div>');
+  }
+  async function requestLocation() {
+    if(!$('appDialog').open)return;
+    const button=$('requestLocationButton'),status=$('locationStatus');
+    if(!button||!status)return;
+    state.locationUrl='';$('locationActions').hidden=true;$('locationCopyFallback').value='';$('locationCopyFallback').hidden=true;$('locationOpen').removeAttribute('href');
+    if(!window.isSecureContext||!navigator.geolocation){status.textContent='เบราว์เซอร์นี้ไม่รองรับตำแหน่งบนหน้านี้ กรุณาเปิดเว็บผ่าน HTTPS หรือเปิด Google Maps โดยตรง';return;}
+    const policy=document.permissionsPolicy||document.featurePolicy;
+    if(policy?.allowsFeature&&!policy.allowsFeature('geolocation')){status.textContent='หน้านี้ถูกจำกัดสิทธิ์ตำแหน่งจากการฝังหน้าเว็บ กรุณาเปิด TripPlanner บน GitHub Pages ผ่านลิงก์ด้านล่าง';return;}
+    const request=++state.locationRequest;button.disabled=true;status.textContent='กำลังรอตำแหน่งจากเบราว์เซอร์…';
+    try {
+      const position=await new Promise((resolve,reject)=>navigator.geolocation.getCurrentPosition(resolve,reject,{enableHighAccuracy:true,timeout:15000,maximumAge:0}));
+      if(request!==state.locationRequest||!$('appDialog').open)return;
+      const {latitude,longitude,accuracy}=position.coords;
+      if(!Number.isFinite(latitude)||!Number.isFinite(longitude)||latitude<-90||latitude>90||longitude<-180||longitude>180)throw new Error('พิกัดที่ได้รับไม่ถูกต้อง กรุณาลองใหม่');
+      const coords=latitude.toFixed(6)+','+longitude.toFixed(6);
+      state.locationUrl=M.mapUrl(coords);
+      $('locationOpen').href=state.locationUrl;$('locationCopyFallback').value=state.locationUrl;$('locationCopyFallback').hidden=false;
+      $('locationActions').hidden=false;
+      const accuracyText=Number.isFinite(accuracy)?' · ความคลาดเคลื่อนประมาณ '+M.fmt(Math.round(accuracy))+' เมตร':'';
+      status.textContent='ได้พิกัด '+coords+accuracyText+' · เลือกแชร์ลิงก์ด้านล่างเมื่อพร้อม';
+    } catch(error) {
+      if(request!==state.locationRequest||!$('appDialog').open)return;
+      const denied=window.top!==window.self?'หน้าเว็บที่เปิดแบบฝังอาจไม่อนุญาตตำแหน่ง ให้ลองเปิด TripPlanner บน GitHub Pages หรือเช็กสิทธิ์ตำแหน่งในเบราว์เซอร์':'คุณยังไม่ได้อนุญาตตำแหน่ง หากต้องการลองใหม่ให้เปิดสิทธิ์ตำแหน่งของเว็บนี้ในเบราว์เซอร์';
+      const messages={1:denied,2:'อุปกรณ์หาตำแหน่งไม่พบ ลองเปิด GPS หรือใช้ Google Maps โดยตรง',3:'หาตำแหน่งนานเกินไป กรุณาลองใหม่'};
+      status.textContent=messages[error.code]||error.message||'หาตำแหน่งไม่สำเร็จ กรุณาลองใหม่';
+    } finally {if(request===state.locationRequest&&$('appDialog').open)button.disabled=false;}
+  }
+  async function copyLocation() {
+    if(!state.locationUrl)return;
+    const url=state.locationUrl;
+    try{await navigator.clipboard.writeText(url);if(state.locationUrl===url&&$('appDialog').open)$('locationStatus').textContent='คัดลอกลิงก์ตำแหน่งแล้ว ส่งให้คนในทริปได้เลย';}
+    catch{if(state.locationUrl!==url||!$('appDialog').open)return;const input=$('locationCopyFallback');input.hidden=false;input.focus();input.select();$('locationStatus').textContent='คัดลอกอัตโนมัติไม่ได้ กรุณาคัดลอกลิงก์ที่เลือกไว้ในช่องด้านล่าง';}
+  }
+  async function shareLocation() {
+    if(!state.locationUrl)return;
+    const url=state.locationUrl;
+    if(navigator.share){try{await navigator.share({title:'ตำแหน่งปัจจุบันของฉัน',url});if(state.locationUrl===url&&$('appDialog').open)$('locationStatus').textContent='ส่งลิงก์ตำแหน่งแล้ว';return;}catch(error){if(error.name==='AbortError')return;}}
+    await copyLocation();
+  }
+  function exportCalendarReminder() {
+    if(!state.plan)return;
+    const name='TripPlanner-reminder-'+state.plan.startDate+'.ics';
+    download(M.reminderIcs(state.plan),name,'text/calendar;charset=utf-8');
+    notice('ดาวน์โหลดไฟล์เตือนแล้ว เปิดไฟล์และเพิ่มลงปฏิทินเพื่อรับแจ้งเตือน');
+  }
+
   async function exportImage() {
     if(!state.plan)return;const plan=state.plan,day=plan.days[state.activeDay];dialog('ภาพแผนวันที่ '+day.dayNumber,'<p class="image-export-status">กำลังจัดภาพรายวัน…</p>');
     try {
@@ -969,6 +1142,11 @@ window.TRIP_APP_CONFIG = Object.freeze({
     if(action==='export')showJsonExport();
     if(action==='copy'&&state.plan)await copyPlan();
     if(action==='share')await sharePlan();
+    if(action==='location')showLocation();
+    if(action==='request-location')await requestLocation();
+    if(action==='copy-location')await copyLocation();
+    if(action==='share-location')await shareLocation();
+    if(action==='calendar-reminder')exportCalendarReminder();
     if(action==='image')await exportImage();
     if(action==='print'&&state.plan)window.print();
     if(action==='import')$('importFile').click();
@@ -1000,7 +1178,7 @@ window.TRIP_APP_CONFIG = Object.freeze({
   $('savedSearch').addEventListener('input',renderSaved);
   $('importFile').addEventListener('change',event=>importPlans(event.target.files[0]));
   $('appDialog').addEventListener('click',event=>{if(event.target===$('appDialog')){const rect=$('appDialog').getBoundingClientRect();if(event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom)closeDialog();}});
-  $('appDialog').addEventListener('cancel',()=>{if(state.imageUrl){URL.revokeObjectURL(state.imageUrl);state.imageUrl='';}});
+  $('appDialog').addEventListener('close',()=>{state.locationRequest++;state.locationUrl='';$('dialogBody').replaceChildren();if(state.imageUrl){URL.revokeObjectURL(state.imageUrl);state.imageUrl='';}});
   window.addEventListener('offline',updateNetwork);
   window.addEventListener('online',()=>{updateNetwork();if(state.backend?.aiConfigured&&state.backend.enabled)$('connectionBanner').hidden=true;connect().catch(()=>{});});
   window.addEventListener('beforeunload',event=>{if(state.busy){event.preventDefault();event.returnValue='';}});

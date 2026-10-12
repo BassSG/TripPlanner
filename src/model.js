@@ -111,5 +111,54 @@
     if (plan.sources.length) lines.push('','แหล่งข้อมูลประกอบ:',...plan.sources.map(s => s.title + ' ' + s.url));
     return lines.join('\n');
   }
-  root.TripModel = {categories,fmt,escape,safeUrl,mapUrl,sourceMatchesDestination,dayExpense,normalizePlan,validateInput,dateForDay,planText};
+  function reminderIcs(plan, now = new Date()) {
+    const startDate = plan && plan.startDate;
+    if (typeof startDate !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(startDate)) {
+      throw new Error('กรุณาระบุวันเริ่มเดินทางที่ถูกต้องก่อนเพิ่มการแจ้งเตือน');
+    }
+    const tripDate = new Date(startDate + 'T00:00:00.000Z');
+    if (!Number.isFinite(tripDate.getTime()) || tripDate.toISOString().slice(0, 10) !== startDate) {
+      throw new Error('วันเริ่มเดินทางไม่ถูกต้อง กรุณาตรวจวันที่อีกครั้ง');
+    }
+    // Thailand is UTC+7: 09:00 on the previous calendar day is 02:00 UTC.
+    const reminder = new Date(tripDate.getTime() - 86400000);
+    reminder.setUTCHours(2, 0, 0, 0);
+    if (!(now instanceof Date) || !Number.isFinite(now.getTime())) {
+      throw new Error('ไม่สามารถตรวจเวลาปัจจุบันเพื่อสร้างการแจ้งเตือนได้');
+    }
+    if (reminder.getTime() <= now.getTime()) {
+      throw new Error('เวลาแจ้งเตือน 09:00 น. ก่อนวันเดินทางผ่านไปแล้ว กรุณาเลือกวันเดินทางใหม่');
+    }
+    const utc = date => date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
+    const cleanText = value => String(value ?? '').replace(/\r\n|\r|\n/g, '\n')
+      .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '')
+      .replace(/\\/g, '\\\\').replace(/\n/g, '\\n').replace(/;/g, '\\;').replace(/,/g, '\\,');
+    const encoder = new TextEncoder();
+    const fold = line => {
+      let result = '', bytes = 0;
+      for (const character of line) {
+        const length = encoder.encode(character).length;
+        if (bytes + length > 75) { result += '\r\n '; bytes = 1; }
+        result += character;
+        bytes += length;
+      }
+      return result;
+    };
+    const destination = str(plan.destination, 120) || 'จุดหมายของคุณ';
+    const title = str(plan.tripTitle, 200) || 'ทริป ' + destination;
+    const summary = 'เตรียมเดินทาง: ' + title;
+    const description = 'พรุ่งนี้เริ่มเดินทางไป' + destination + ' (' + startDate + ')\nเปิด TripPlanner เพื่อตรวจแผนและรายการจัดกระเป๋า';
+    const identifier = String(plan.id || '').replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 80) || 'trip';
+    const uid = 'reminder-' + identifier + '-' + startDate.replace(/-/g, '') + '@tripplanner.basssg.github.io';
+    const lines = [
+      'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//TripPlanner//Trip Reminder//TH', 'CALSCALE:GREGORIAN',
+      'BEGIN:VEVENT', 'UID:' + uid, 'DTSTAMP:' + utc(now),
+      'DTSTART:' + utc(reminder), 'DTEND:' + utc(new Date(reminder.getTime() + 15 * 60000)),
+      'SUMMARY:' + cleanText(summary), 'DESCRIPTION:' + cleanText(description),
+      'BEGIN:VALARM', 'ACTION:DISPLAY', 'DESCRIPTION:' + cleanText(summary),
+      'TRIGGER;VALUE=DATE-TIME:' + utc(reminder), 'END:VALARM', 'END:VEVENT', 'END:VCALENDAR'
+    ];
+    return lines.map(fold).join('\r\n') + '\r\n';
+  }
+  root.TripModel = {categories,fmt,escape,safeUrl,mapUrl,sourceMatchesDestination,dayExpense,normalizePlan,validateInput,dateForDay,planText,reminderIcs};
 })(typeof window !== 'undefined' ? window : globalThis);

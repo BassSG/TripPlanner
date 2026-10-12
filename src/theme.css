@@ -319,3 +319,70 @@
   .day-kicker,.day-activity-count { font-size:8pt; }
   .activity-stop { display:none; }
 }
+
+/* Location tools share the trip's navy surfaces and reserved gold accents. */
+@media screen {
+  .map-search-entry {
+    min-width:0; margin:-5px 0 25px; padding:15px 17px;
+    border:1px solid #39536e; border-left:3px solid #cfb884; border-radius:12px;
+    background:linear-gradient(115deg,#1c3048,#17263a 75%);
+  }
+  .map-search-entry > div { display:flex; flex-wrap:wrap; align-items:center; gap:9px; }
+  .map-search-entry .button {
+    min-width:0; min-height:44px; padding:9px 12px; border-color:#4b6b8b;
+    background:#223a55; color:#d5e9fa; font-size:12px; line-height:1.4;
+  }
+  .map-search-entry .button:hover { background:#2b4b6c; border-color:#7da8cf; }
+  .map-search-entry .button + .button { border-color:#76694e; background:#302e2d; color:#e2d0a9; }
+  .map-search-entry .button + .button:hover { background:#423a30; border-color:#b6a173; }
+  .map-search-entry .icon { width:16px; height:16px; }
+  .map-search-entry small { display:block; margin-top:10px; color:#aebed0; font-size:12px; line-height:1.7; }
+  .location-share-button { border-color:#76694e; background:#282b31; color:#e0cda2; }
+  .location-share-button:hover { border-color:#b8a475; background:#393630; }
+  .location-share-button .icon { color:#cfb884; }
+  .location-card {
+    min-width:0; padding:19px; border:1px solid #3b5675; border-radius:15px;
+    background:linear-gradient(145deg,#1d3149,#16253a 78%);
+    box-shadow:inset 0 1px 0 #ffffff0b;
+  }
+  .location-status {
+    display:flex; align-items:flex-start; gap:10px; min-width:0;
+    padding:13px 14px; border:1px solid #476585; border-radius:10px;
+    background:#122238; color:#d7e6f3; font-size:12px; line-height:1.75;
+    overflow-wrap:anywhere;
+  }
+  .location-status::before {
+    content:''; flex:none; width:8px; height:8px; margin-top:7px; border-radius:50%;
+    background:#cfb884; box-shadow:0 0 0 4px #cfb88420;
+  }
+  .location-actions { display:flex; flex-wrap:wrap; gap:9px; margin-top:16px; }
+  .location-actions > .button,.location-actions > button,.location-actions > a {
+    display:inline-flex; align-items:center; justify-content:center; gap:7px;
+    flex:1 1 145px; min-width:0; min-height:44px; white-space:normal;
+    text-align:center; overflow-wrap:anywhere;
+  }
+  .location-actions .secondary { border-color:#577493; background:#223b55; color:#d9eafb; }
+  .location-actions .secondary:hover { background:#2b4b6c; }
+  .location-link {
+    display:block; width:100%; min-height:44px; margin-top:13px; padding:10px 12px;
+    border:1px solid #4a6887; border-radius:9px; background:#0f1d2e;
+    color:#b9d5ed; font-size:13px; text-overflow:ellipsis;
+  }
+  .location-link:focus { outline:2px solid #cfb884; outline-offset:2px; }
+  .location-card > .button { min-height:44px; margin-top:14px; }
+  .location-card > .small { font-size:12px; line-height:1.7; }
+  .location-card > .small a { margin-left:4px; color:#a8d2f3; }
+  .calendar-reminder { margin-top:17px; padding-top:17px; border-top:1px solid var(--line); }
+  .calendar-reminder .button { width:100%; min-height:44px; padding:10px 12px; white-space:normal; text-align:left; justify-content:flex-start; }
+  .calendar-reminder .icon { flex:none; width:16px; height:16px; }
+  .calendar-reminder small { display:block; margin-top:8px; color:var(--muted); font-size:12px; line-height:1.6; }
+}
+@media screen and (max-width:760px) {
+  .map-search-entry { margin:0 0 23px; padding:14px; }
+  .map-search-entry > div { display:grid; grid-template-columns:1fr; }
+  .map-search-entry .button { width:100%; justify-content:flex-start; font-size:12px; }
+  .result-action-controls > .location-share-button { flex:1 1 100%; width:100%; }
+  .location-card { padding:15px; }
+  .location-actions { flex-direction:column; }
+  .location-actions > .button,.location-actions > button,.location-actions > a { flex:0 0 auto; width:100%; }
+}
