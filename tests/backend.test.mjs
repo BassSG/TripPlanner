@@ -27,7 +27,19 @@ function setup(options={}) {
   return {ctx,props,cache,calls,logs,response};
 }
 test('legacy AI_API_KEY still works, diagnostics never expose credentials',()=>{
-  const {ctx}=setup();const status=ctx.getAppStatus();assert.equal(status.aiConfigured,true);assert.equal(status.searchConfigured,false);assert.ok(!JSON.stringify(status).includes('test-only-key'));assert.equal(status.version,'8.3.0');
+  const {ctx}=setup();const status=ctx.getAppStatus();assert.equal(status.aiConfigured,true);assert.equal(status.searchConfigured,false);assert.ok(!JSON.stringify(status).includes('test-only-key'));assert.equal(status.version,'8.4.0');
+});
+test('selected map points reach the itinerary and malformed coordinates stop before AI calls',()=>{
+  const {ctx,calls}=setup();
+  const selected={...input,originPlace:{label:input.origin,lat:13.756331,lng:100.501765},destinationPlace:{label:input.destination,lat:18.7883,lng:98.9853}};
+  for(const place of [{label:input.origin,lat:100,lng:100},{label:'wrong',lat:13,lng:100},{label:input.origin,lng:100}]){
+    const result=ctx.prepareTrip({...selected,originPlace:place});assert.equal(result.code,'VALIDATION');
+  }
+  assert.equal(calls.length,0);
+  const result=ctx.generateFullPlan(selected);assert.equal(result.success,true);
+  assert.equal(result.plan.originPlace.lat,13.756331);assert.equal(result.plan.destinationPlace.lng,98.9853);
+  const payload=JSON.parse(calls.find(call=>call.url.includes('openrouter')).settings.payload);
+  assert.ok(payload.messages[1].content.includes('13.756331'));
 });
 test('reject fractional, infinite, negative and excessive input before charging API',()=>{
   const {ctx,calls}=setup();for(const values of [{days:2.5},{days:31},{people:-2},{children:-1},{budget:Infinity},{people:49,children:2},{startDate:'2026-02-30'},{travelMode:'<script>'}]){const result=ctx.prepareTrip({...input,...values});assert.equal(result.success,false);assert.equal(result.code,'VALIDATION');}assert.equal(calls.length,0);

@@ -16,6 +16,17 @@
   const escape = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   function safeUrl(value) {try {const url = new URL(value); return url.protocol === 'https:' && !url.username && !url.password ? url.href : '';} catch {return '';}}
   const mapUrl = query => 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(str(query,240));
+  function directionsUrl(origin, destination, originPlace, destinationPlace) {
+    const from = originPlace ? originPlace.lat + ',' + originPlace.lng : str(origin,120);
+    const to = destinationPlace ? destinationPlace.lat + ',' + destinationPlace.lng : str(destination,120);
+    return 'https://www.google.com/maps/dir/?api=1&origin=' + encodeURIComponent(from) + '&destination=' + encodeURIComponent(to);
+  }
+  function normalizePlace(value, expectedLabel) {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+    const lat = value.lat, lng = value.lng, label = str(value.label,120);
+    if (!Number.isFinite(lat) || !Number.isFinite(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180 || !label || label !== str(expectedLabel,120)) return null;
+    return {label,lat:Math.round(lat*1000000)/1000000,lng:Math.round(lng*1000000)/1000000};
+  }
   function sourceMatchesDestination(source,destination) {
     const aliases={'เชียงใหม่':['chiangmai'],'กาญจนบุรี':['kanchanaburi'],'กระบี่':['krabi'],'กรุงเทพมหานคร':['bangkok'],'กรุงเทพ':['bangkok'],'โตเกียว':['tokyo'],'ญี่ปุ่น':['japan']};
     const label=str(destination,120).replace(/^(?:จังหวัด|จ\.|เมือง)\s*/,'').split(/[,/()]/)[0].trim(),first=label.split(/\s+/)[0];
@@ -46,7 +57,7 @@
     const startDate = str(input.startDate,10);
     if (startDate) {const date = new Date(startDate + 'T12:00:00Z'); if (!/^\d{4}-\d{2}-\d{2}$/.test(startDate) || !Number.isFinite(date.getTime()) || date.toISOString().slice(0,10) !== startDate) throw new Error('วันที่เดินทางไม่ถูกต้อง');}
     if (!['car','public','flight','motorcycle','flexible'].includes(input.travelMode)) throw new Error('กรุณาเลือกวิธีเดินทาง');
-    return {...input,destination,origin,budget,days,people,children,startDate,preferences:str(input.preferences,1200)};
+    return {...input,destination,origin,originPlace:normalizePlace(input.originPlace,origin),destinationPlace:normalizePlace(input.destinationPlace,destination),budget,days,people,children,startDate,preferences:str(input.preferences,1200)};
   }
   function normalizePlan(value) {
     const raw = value && value.plan || value;
@@ -82,7 +93,7 @@
     if (raw.schemaVersion !== 2) warnings.push('นำเข้าจากแผนเวอร์ชันก่อน ควรตรวจว่าค่าใช้จ่ายเป็นยอดรวมทั้งกลุ่มก่อนใช้งาน');
     return {schemaVersion:2,id:str(raw.id,80) || root.crypto?.randomUUID?.() || 'trip-' + Date.now(),createdAt:str(raw.createdAt,40) || new Date().toISOString(),
       tripTitle:raw.schemaVersion===2&&days.length>4?'ทริป '+str(raw.destination,120)+' '+days.length+' วัน':str(raw.tripTitle,200) || 'ทริป ' + raw.destination,
-      destination:str(raw.destination,120),origin:str(raw.origin,120),
+      destination:str(raw.destination,120),origin:str(raw.origin,120),originPlace:normalizePlace(raw.originPlace,raw.origin),destinationPlace:normalizePlace(raw.destinationPlace,raw.destination),
       summary:raw.schemaVersion===2&&days.length>4?'แผนเที่ยว '+str(raw.destination,120)+' '+days.length+' วัน สำหรับ '+(Number(raw.totalTravelers)||1)+' คน งบรวม ฿'+fmt(budget)+' พร้อมกิจกรรมรายวันและที่พัก '+(days.length-1)+' คืน':str(raw.summary,1500),
       startDate:str(raw.startDate,10),travelMode:str(raw.travelMode,30),totalBudget:budget,totalTravelers:integer(raw.totalTravelers || 1,1,50,'จำนวนผู้เดินทางในไฟล์ไม่ถูกต้อง'),
       adults:Number(raw.adults) || Number(raw.totalTravelers) || 1,children:Number(raw.children) || 0,
@@ -101,6 +112,7 @@
   function planText(plan) {
     const lines = [plan.tripTitle,'จุดหมาย: ' + plan.destination,'ผู้เดินทาง ' + plan.totalTravelers + ' คน · ' + plan.days.length + ' วัน',
       'งบรวม ฿' + fmt(plan.totalBudget) + ' · ค่าใช้จ่ายประมาณการ ฿' + fmt(plan.totalExpense.total),plan.summary,''];
+    if (plan.origin !== 'อยู่ที่ปลายทางแล้ว') lines.push('เส้นทางต้นทาง–ปลายทาง: ' + directionsUrl(plan.origin,plan.destination,plan.originPlace,plan.destinationPlace),'');
     plan.days.forEach((day,index) => {
       lines.push('วันที่ ' + day.dayNumber + (plan.startDate ? ' (' + dateForDay(plan.startDate,index) + ')' : '') + ' — ' + day.title);
       day.activities.forEach(a => lines.push(a.time + '–' + a.endTime + ' ' + a.title + ' · ฿' + fmt(a.cost), a.description, mapUrl(a.mapQuery)));
@@ -160,5 +172,5 @@
     ];
     return lines.map(fold).join('\r\n') + '\r\n';
   }
-  root.TripModel = {categories,fmt,escape,safeUrl,mapUrl,sourceMatchesDestination,dayExpense,normalizePlan,validateInput,dateForDay,planText,reminderIcs};
+  root.TripModel = {categories,fmt,escape,safeUrl,mapUrl,directionsUrl,normalizePlace,sourceMatchesDestination,dayExpense,normalizePlan,validateInput,dateForDay,planText,reminderIcs};
 })(typeof window !== 'undefined' ? window : globalThis);

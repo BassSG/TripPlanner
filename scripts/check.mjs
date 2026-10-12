@@ -4,7 +4,7 @@ import {execFileSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 import path from 'node:path';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
-for(const file of ['src/app.js','src/model.js','app-config.js','service-worker.js','scripts/build.mjs','scripts/serve.mjs'])execFileSync(process.execPath,['--check',path.join(root,file)],{stdio:'pipe'});
+for(const file of ['src/app.js','src/model.js','src/place-picker.js','app-config.js','service-worker.js','scripts/build.mjs','scripts/serve.mjs'])execFileSync(process.execPath,['--check',path.join(root,file)],{stdio:'pipe'});
 new vm.Script(await readFile(path.join(root,'apps-script/Code.gs'),'utf8'));
 for(const file of ['manifest.json','apps-script/appsscript.json','.clasp.json'])JSON.parse((await readFile(path.join(root,file),'utf8')).replace(/^\uFEFF/,''));
 const manifest=JSON.parse((await readFile(path.join(root,'manifest.json'),'utf8')).replace(/^\uFEFF/,''));
