@@ -16,6 +16,15 @@
   const escape = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   function safeUrl(value) {try {const url = new URL(value); return url.protocol === 'https:' && !url.username && !url.password ? url.href : '';} catch {return '';}}
   const mapUrl = query => 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(str(query,240));
+  function sourceMatchesDestination(source,destination) {
+    const aliases={'เชียงใหม่':['chiangmai'],'กาญจนบุรี':['kanchanaburi'],'กระบี่':['krabi'],'กรุงเทพมหานคร':['bangkok'],'กรุงเทพ':['bangkok'],'โตเกียว':['tokyo'],'ญี่ปุ่น':['japan']};
+    const label=str(destination,120).replace(/^(?:จังหวัด|จ\.|เมือง)\s*/,'').split(/[,/()]/)[0].trim(),first=label.split(/\s+/)[0];
+    const names=[label.replace(/\s+(?:ประเทศไทย|thailand|ญี่ปุ่น|japan)$/i,'')];if(aliases[first])names.push(first,...aliases[first]);
+    const compact=value=>String(value||'').normalize('NFKC').toLowerCase().replace(/[^\p{L}\p{N}]/gu,'');
+    let url=source.url||'';try{url=decodeURIComponent(url);}catch{}
+    const haystack=compact((source.title||'')+' '+(source.description||'')+' '+url);
+    return names.map(compact).filter(name=>name.length>=2).some(name=>haystack.includes(name));
+  }
   function dayExpense(day) {
     const expense = emptyExpense();
     day.activities.forEach(a => {const bucket = buckets[a.category]; if (bucket) expense[bucket] = round(expense[bucket] + money(a.cost));});
@@ -44,7 +53,9 @@
     if (!raw || typeof raw !== 'object' || !str(raw.destination,120) || !Array.isArray(raw.days) || !raw.days.length || raw.days.length > 30) throw new Error('ไฟล์นี้ไม่มีแผนการเดินทางที่รองรับ');
     const budget = money(raw.totalBudget);
     const sourceIds = new Set();
-    const sources = list(raw.sources,12).map((s,i) => {const url = safeUrl(s.url); const id = /^S\d{1,2}$/.test(s.id) ? s.id : 'S' + (i+1); sourceIds.add(id); return {id,title:str(s.title,200),description:str(s.description,1000),url,retrievedAt:str(s.retrievedAt,40)};}).filter(s => s.url);
+    const originalSources = list(raw.sources,12);
+    const sources = originalSources.map((s,i) => {const url = safeUrl(s.url); const id = /^S\d{1,2}$/.test(s.id) ? s.id : 'S' + (i+1); return {id,title:str(s.title,200),description:str(s.description,1000),url,retrievedAt:str(s.retrievedAt,40)};}).filter(s => s.url && sourceMatchesDestination(s,raw.destination));
+    sources.forEach(s=>sourceIds.add(s.id));
     const ids = value => strings(value,4).filter(id => sourceIds.has(id));
     const days = raw.days.map((d,index) => {
       if (!d || !Array.isArray(d.activities) || !d.activities.length || d.activities.length > 40) throw new Error('ข้อมูลกิจกรรมในแผนไม่ครบ');
@@ -65,6 +76,7 @@
     days.forEach(d => Object.keys(totalExpense).forEach(key => {totalExpense[key] = round(totalExpense[key] + d.dailyExpense[key]);}));
     totalExpense.remaining = round(budget - totalExpense.total);
     const warnings = strings(raw.warnings,15);
+    if(originalSources.length&&!sources.length&&!warnings.some(w=>w.includes('ผลค้นเว็บไม่ตรง')))warnings.push('ผลค้นเว็บไม่ตรงกับจุดหมายนี้ จึงไม่ใช้เป็นแหล่งอ้างอิง แผนยังใช้ราคาโดยประมาณ');
     if (totalExpense.remaining < 0 && !warnings.some(w => w.includes('เกินงบ'))) warnings.push('ค่าใช้จ่ายประมาณการเกินงบ ' + fmt(Math.abs(totalExpense.remaining)) + ' บาท');
     if (totalExpense.transport === 0 && !warnings.some(w => w.includes('ยังไม่ได้แยกค่าเดินทาง'))) warnings.push('แผนนี้ยังไม่ได้แยกค่าเดินทางไว้ อาจมีค่าน้ำมัน ค่าที่จอดรถ หรือค่าโดยสารเพิ่มเติม');
     if (raw.schemaVersion !== 2) warnings.push('นำเข้าจากแผนเวอร์ชันก่อน ควรตรวจว่าค่าใช้จ่ายเป็นยอดรวมทั้งกลุ่มก่อนใช้งาน');
@@ -99,5 +111,5 @@
     if (plan.sources.length) lines.push('','แหล่งข้อมูลประกอบ:',...plan.sources.map(s => s.title + ' ' + s.url));
     return lines.join('\n');
   }
-  root.TripModel = {categories,fmt,escape,safeUrl,mapUrl,dayExpense,normalizePlan,validateInput,dateForDay,planText};
+  root.TripModel = {categories,fmt,escape,safeUrl,mapUrl,sourceMatchesDestination,dayExpense,normalizePlan,validateInput,dateForDay,planText};
 })(typeof window !== 'undefined' ? window : globalThis);

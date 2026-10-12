@@ -196,7 +196,9 @@ function findSources_(params, config) {
       });
     } catch (error) { result.warnings.push(error.code ? error.message : 'ค้นข้อมูลเว็บบางส่วนไม่สำเร็จ จึงใช้ราคาโดยประมาณ'); }
   });
-  result.sources = result.sources.slice(0, 8).map(function(source, index) { source.id = 'S' + (index + 1); return source; });
+  const foundCount = result.sources.length;
+  result.sources = result.sources.filter(function(source) {return sourceMatchesDestination_(source, params.destination);}).slice(0, 8).map(function(source, index) { source.id = 'S' + (index + 1); return source; });
+  if (foundCount && !result.sources.length) result.warnings.push('ผลค้นเว็บไม่ตรงกับจุดหมายนี้ จึงไม่ใช้เป็นแหล่งอ้างอิง แผนยังใช้ราคาโดยประมาณ');
   result.warnings = Array.from(new Set(result.warnings));
   if (!result.sources.length && !result.warnings.length) result.warnings.push('ไม่พบแหล่งข้อมูลเว็บสำหรับจุดหมายนี้');
   return result;
@@ -388,6 +390,17 @@ function mapLink_(query) {return 'https://www.google.com/maps/search/?api=1&quer
 function text_(value, max) {return (typeof value === 'string' ? value : '').trim().slice(0,max);}
 function textList_(value, max) {return Array.isArray(value) ? value.slice(0,max).map(function(v) {return text_(v,600);}).filter(Boolean) : [];}
 function safeHttps_(value) {return typeof value === 'string' && /^https:\/\/[^\s<>"']+$/i.test(value) ? value : '';}
+function sourceMatchesDestination_(source, destination) {
+  const aliases = {'เชียงใหม่':['chiangmai'],'กาญจนบุรี':['kanchanaburi'],'กระบี่':['krabi'],'กรุงเทพมหานคร':['bangkok'],'กรุงเทพ':['bangkok'],'โตเกียว':['tokyo'],'ญี่ปุ่น':['japan']};
+  const label = text_(destination,120).replace(/^(?:จังหวัด|จ\.|เมือง)\s*/,'').split(/[,/()]/)[0].trim();
+  const first = label.split(/\s+/)[0];
+  const names = [label.replace(/\s+(?:ประเทศไทย|thailand|ญี่ปุ่น|japan)$/i,'')];
+  if (aliases[first]) names.push(first, ...aliases[first]);
+  function compact(value) {return String(value || '').normalize('NFKC').toLowerCase().replace(/[^\p{L}\p{N}]/gu,'');}
+  let url = source.url || ''; try {url = decodeURIComponent(url);} catch(error) { /* Use the encoded URL. */ }
+  const haystack = compact((source.title || '') + ' ' + (source.description || '') + ' ' + url);
+  return names.map(compact).filter(function(name) {return name.length >= 2;}).some(function(name) {return haystack.includes(name);});
+}
 function parseJson_(text) {
   try {return JSON.parse(text.trim().replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,''));}
   catch(error) {throw tripError_('INVALID_JSON', 'AI ส่ง JSON ไม่สมบูรณ์');}
@@ -403,6 +416,11 @@ function readTicket_(ticket) {
   if (typeof ticket !== 'string' || !/^[a-f0-9]{64}$/.test(ticket)) throw tripError_('EXPIRED', 'รหัสแผนไม่ถูกต้อง กรุณาเริ่มใหม่');
   const request = cacheGet_('ticket:' + ticket);
   if (!request) throw tripError_('EXPIRED', 'แผนระหว่างสร้างหมดอายุ กรุณาเริ่มสร้างใหม่');
+  const sources = request.research.sources;
+  request.research.sources = sources.filter(function(source) {return sourceMatchesDestination_(source, request.params.destination);});
+  if (sources.length && !request.research.sources.length && !request.research.warnings.some(function(w) {return w.includes('ผลค้นเว็บไม่ตรง');})) {
+    request.research.warnings.push('ผลค้นเว็บไม่ตรงกับจุดหมายนี้ จึงไม่ใช้เป็นแหล่งอ้างอิง แผนยังใช้ราคาโดยประมาณ');
+  }
   return request;
 }
 function reserveBrowserTrip_(clientId) {
