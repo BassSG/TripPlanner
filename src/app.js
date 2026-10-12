@@ -47,7 +47,7 @@
   };
   function icon(name) {return '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true">' + (paths[name] || paths.activity) + '</svg>';}
   function hydrateIcons(parent = document) {parent.querySelectorAll('[data-icon]').forEach(el => {el.innerHTML = icon(el.dataset.icon);});}
-  const state = {view:'planner',plan:null,activeDay:0,saved:[],interests:new Set(),busy:false,generation:0,resume:null,backend:null,storageRaw:'',storageNotice:'',imageUrl:'',installPrompt:null,locationUrl:'',locationRequest:0,originPlace:null,destinationPlace:null};
+  const state = {view:'planner',plan:null,activeDay:0,saved:[],interests:new Set(),busy:false,generation:0,resume:null,backend:null,storageRaw:'',storageNotice:'',imageUrl:'',installPrompt:null,locationUrl:'',locationRequest:0,originPlace:null,destinationPlace:null,tripMode:false,routeResults:new Map(),routePending:new Set()};
   const savedKey = 'tripplanner:v8:plans';
   const draftKey = 'tripplanner:v8:draft';
   let toastTimer, elapsedTimer, connectionPromise, connectionWindow, connectionOrigin, connectionNonce, bridgeFrame;
@@ -156,6 +156,7 @@
         else if(method==='prepareTrip')runner.prepareTrip(args[0]);
         else if(method==='generateTripDays')runner.generateTripDays(args[0],args[1]);
         else if(method==='completeTrip')runner.completeTrip(args[0]);
+        else if(method==='getRouteEstimate')runner.getRouteEstimate(args[0]);
         else failure();
       }else if(connectionWindow){connectionWindow.postMessage({channel,nonce:connectionNonce,id,method,args},connectionOrigin);}
       else failure();
@@ -178,6 +179,7 @@
       }
       const status=await rpc('getAppStatus');
       if(!status||!status.success)throw new Error('GAS ยังไม่พร้อมใช้งาน');state.backend=status;
+      if(state.tripMode)renderTripMode();
       $('backendDot').className='status-dot'+(!status.aiConfigured||!status.enabled?' warning':'');
       $('backendLabel').textContent=!status.enabled?'พักสร้างแผนใหม่':status.aiConfigured?'GAS พร้อมใช้งาน':'ยังไม่ตั้งค่าคีย์ AI';
       if(!status.aiConfigured){$('connectionMessage').textContent='ยังไม่ได้ตั้งค่าคีย์ AI ใน GAS เปิดการเชื่อมต่อ & API เพื่อดูรายการตั้งค่า';$('connectionBanner').hidden=false;}
@@ -219,7 +221,7 @@
       }
       step('stepPlan','done');step('stepFinish','current');$('loadingDetail').textContent='กำลังรวมแผนและคำนวณค่าใช้จ่ายทั้งกลุ่ม';
       const result=checkedResult(await rpc('completeTrip',[prepared.ticket]));if(generation!==state.generation)return;
-      state.plan=M.normalizePlan(result.plan);state.activeDay=0;state.resume=null;step('stepFinish','done');renderPlan();savePlan(state.plan);screen('resultScreen');$('resultTitle').focus();$('resultScreen').scrollIntoView({block:'start',behavior:'auto'});notice('แผนทริปพร้อมแล้ว ตรวจรายละเอียดก่อนเดินทางได้เลย');
+      state.plan=M.normalizePlan(result.plan);state.activeDay=0;state.resume=null;state.tripMode=false;state.routeResults.clear();$('resultScreen').classList.remove('trip-active');$('tripModePanel').hidden=true;step('stepFinish','done');renderPlan();savePlan(state.plan);screen('resultScreen');$('resultTitle').focus();$('resultScreen').scrollIntoView({block:'start',behavior:'auto'});notice('แผนทริปพร้อมแล้ว ตรวจรายละเอียดก่อนเดินทางได้เลย');
     }catch(error){if(generation!==state.generation)return;if(error.code==='EXPIRED'||error.code==='INVALID_CHUNK')state.resume=null;screen('formScreen');$('formError').textContent=error.message;$('formError').hidden=false;$('formError').scrollIntoView({block:'center',behavior:'smooth'});}
     finally{if(generation===state.generation){state.busy=false;clearInterval(elapsedTimer);$('generateBtn').disabled=false;$('generateLabel').textContent=state.resume?'ลองสร้างแผนต่อ':'สร้างแผนทริปของฉัน';}}
   }
@@ -251,12 +253,12 @@
     const saved=state.saved.some(v=>v.id===p.id);$('savedState').innerHTML=icon(saved?'check':'info')+esc(saved?'บันทึกในอุปกรณ์นี้แล้ว':'พร้อมส่งออกหรือบันทึกแผน');
   }
   function renderDay(day,index) {
-    const activities=day.activities.map((a,stop)=>'<article class="activity-card"><div class="activity-time"><span class="activity-stop">'+String(stop+1).padStart(2,'0')+'</span><strong>'+esc(a.time)+'</strong><small>'+esc(a.endTime)+'</small></div><div class="activity-body"><div class="activity-top"><span class="category-tag '+a.category+'">'+icon(a.category)+esc(M.categories[a.category])+'</span><span class="cost-tag">'+(a.cost===0?'ไม่มีค่าใช้จ่ายเพิ่ม':'฿'+M.fmt(a.cost))+'</span></div><h3>'+esc(a.title)+'</h3><p>'+esc(a.description)+'</p><div class="activity-meta"><a href="'+esc(M.mapUrl(a.mapQuery))+'" target="_blank" rel="noopener noreferrer">'+icon('pin')+esc(a.location)+' ↗</a><span>'+esc(a.costNote||'ยอดประมาณการทั้งกลุ่ม')+'</span></div>'+(a.tips?'<div class="activity-tip">'+icon('info')+esc(a.tips)+'</div>':'')+(a.sourceIds.length?'<div class="source-ref">ข้อมูลประกอบ: '+a.sourceIds.map(s=>'<a href="#source-'+esc(s)+'">'+esc(s)+'</a>').join(' · ')+'</div>':'')+'</div></article>').join('');
-    const a=day.accommodation;const stay=a?'<div class="hotel-card">'+icon('hotel')+'<div><span class="eyebrow muted">STAY FOR THE NIGHT</span><h3>'+esc(a.name)+'</h3><p>'+esc(a.highlights)+'</p><a href="'+esc(M.mapUrl(a.mapQuery))+'" target="_blank" rel="noopener noreferrer">ดูที่พักใน Google Maps ↗</a></div><span class="hotel-cost"><strong>฿'+M.fmt(a.pricePerNight)+'</strong>/ คืน ทั้งกลุ่ม</span></div>':'';
+    const activities=day.activities.map((a,stop)=>'<article class="activity-card"><div class="activity-time"><span class="activity-stop">'+String(stop+1).padStart(2,'0')+'</span><strong>'+esc(a.time)+'</strong><small>'+esc(a.endTime)+'</small></div><div class="activity-body"><div class="activity-top"><span class="category-tag '+a.category+'">'+icon(a.category)+esc(M.categories[a.category])+'</span><span class="cost-tag">'+(a.cost===0?'ไม่มีค่าใช้จ่ายเพิ่ม':'฿'+M.fmt(a.cost))+'</span></div><h3>'+esc(a.title)+'</h3><p>'+esc(a.description)+'</p><div class="activity-meta"><a href="'+esc(M.mapUrl(a.mapQuery))+'" target="_blank" rel="noopener noreferrer">'+icon('pin')+esc(a.location)+' ↗</a><span>'+esc(a.costNote||'ยอดประมาณการทั้งกลุ่ม')+'</span></div>'+(a.tips?'<div class="activity-tip">'+icon('info')+esc(a.tips)+'</div>':'')+(a.sourceIds.length?'<div class="source-ref">ข้อมูลประกอบ: '+a.sourceIds.map(s=>'<a href="#source-'+esc(s)+'">'+esc(s)+'</a>').join(' · ')+'</div>':'')+'<div class="activity-edit-actions"><button class="button secondary small-button" data-edit-stop="'+index+':'+stop+'">'+icon('edit')+'แก้จุดแวะ</button><button class="icon-button" data-move-stop="'+index+':'+stop+':-1" aria-label="ย้าย '+esc(a.title)+' ขึ้น" '+(stop===0?'disabled':'')+'>↑</button><button class="icon-button" data-move-stop="'+index+':'+stop+':1" aria-label="ย้าย '+esc(a.title)+' ลง" '+(stop===day.activities.length-1?'disabled':'')+'>↓</button><button class="icon-button" data-remove-stop="'+index+':'+stop+'" aria-label="ลบ '+esc(a.title)+'" '+(day.activities.length===1?'disabled':'')+'>'+icon('trash')+'</button></div></div></article>').join('');
+    const a=day.accommodation;const stay=a?'<div class="hotel-card">'+icon('hotel')+'<div><span class="eyebrow muted">STAY FOR THE NIGHT</span><h3>'+esc(a.name)+'</h3><p>'+esc(a.highlights)+'</p><a href="'+esc(M.mapUrl(a.mapQuery))+'" target="_blank" rel="noopener noreferrer">ดูที่พักใน Google Maps ↗</a><button class="button secondary small-button stay-edit-button" data-edit-stay="'+index+'">'+icon('edit')+'แก้ที่พัก / ราคา</button></div><span class="hotel-cost"><strong>฿'+M.fmt(a.pricePerNight)+'</strong>/ คืน ทั้งกลุ่ม</span></div>':'';
     const first=day.activities[0],last=day.activities[day.activities.length-1];
     const timeRange=first&&last?first.time+' – '+last.endTime:'';
     const dayMeta=day.activities.length+' จุดแวะ'+(timeRange?' · '+timeRange:'');
-    return '<section class="day-panel" id="dayPanel-'+index+'" role="tabpanel" aria-labelledby="dayTab-'+index+'" '+(index!==state.activeDay?'hidden':'')+'><div class="day-heading"><div class="day-heading-copy"><span class="day-kicker">วันที่ '+String(day.dayNumber).padStart(2,'0')+' / '+state.plan.days.length+(state.plan.startDate?' · '+esc(M.dateForDay(state.plan.startDate,index)):'')+'</span><h2>'+esc(day.title||'วันที่ '+day.dayNumber)+'</h2><p>'+esc(day.theme)+'</p><span class="day-activity-count">'+icon('route')+esc(dayMeta)+'</span></div><div class="daily-total">ประมาณการวันนี้<strong>฿'+M.fmt(day.dailyExpense.total)+'</strong><small>ทั้งกลุ่ม</small></div></div><div class="timeline">'+activities+'</div>'+stay+'</section>';
+    return '<section class="day-panel" id="dayPanel-'+index+'" role="tabpanel" aria-labelledby="dayTab-'+index+'" '+(index!==state.activeDay?'hidden':'')+'><div class="day-heading"><div class="day-heading-copy"><span class="day-kicker">วันที่ '+String(day.dayNumber).padStart(2,'0')+' / '+state.plan.days.length+(state.plan.startDate?' · '+esc(M.dateForDay(state.plan.startDate,index)):'')+'</span><h2>'+esc(day.title||'วันที่ '+day.dayNumber)+'</h2><p>'+esc(day.theme)+'</p><span class="day-activity-count">'+icon('route')+esc(dayMeta)+'</span></div><div class="daily-total">ประมาณการวันนี้<strong>฿'+M.fmt(day.dailyExpense.total)+'</strong><small>ทั้งกลุ่ม</small></div></div><div class="day-edit-toolbar"><span>แตะจุดแวะเพื่อแก้เวลา สถานที่ และงบ</span><button class="button secondary small-button" data-add-stop="'+index+'">+ เพิ่มจุดแวะ</button></div><div class="timeline">'+activities+'</div>'+stay+'</section>';
   }
   function setDay(index,focus=false) {
     if(!state.plan||index<0||index>=state.plan.days.length)return;state.activeDay=index;
@@ -264,10 +266,90 @@
     document.querySelectorAll('.day-panel').forEach((panel,i)=>{panel.hidden=i!==index;});if(focus)$('dayTab-'+index).focus();
     $('dayNavigation').scrollIntoView({block:'start',behavior:'auto'});
   }
+  function applyPlanChange(plan,message) {
+    state.plan=plan;state.routeResults.clear();renderPlan();savePlan(plan);
+    if(state.tripMode)renderTripMode();
+    notice(message);
+  }
+  function editStop(dayIndex,stopIndex=-1) {
+    const existing=stopIndex>=0?state.plan?.days[dayIndex]?.activities[stopIndex]:null;
+    if(!state.plan?.days[dayIndex])return;
+    const last=state.plan.days[dayIndex].activities.at(-1),lastEnd=/^\d\d:\d\d$/.test(last?.endTime||'')?Number(last.endTime.slice(0,2))*60+Number(last.endTime.slice(3)):17*60;
+    const startMinutes=Math.min(lastEnd+30,22*60),clock=minutes=>String(Math.floor(minutes/60)).padStart(2,'0')+':'+String(minutes%60).padStart(2,'0');
+    const a=existing||{title:'',time:clock(startMinutes),endTime:clock(startMinutes+60),location:state.plan.destination,description:'',category:'activity',cost:0,costNote:'',tips:''};
+    const field=(label,name,value,type='text',extra='')=>'<label class="trip-edit-field">'+label+'<input name="'+name+'" type="'+type+'" value="'+esc(value)+'" '+extra+'></label>';
+    dialog(existing?'แก้จุดแวะ':'เพิ่มจุดแวะ','<form id="activityEditForm" data-day-index="'+dayIndex+'" data-stop-index="'+stopIndex+'" class="trip-edit-form">'+
+      '<div class="trip-edit-grid">'+field('ชื่อกิจกรรม','title',a.title,'text','maxlength="180" minlength="2" required')+field('สถานที่ / ที่อยู่','location',a.location,'text','maxlength="240" minlength="2" required')+'</div>'+
+      '<div class="trip-edit-grid">'+field('เริ่ม','time',a.time,'time','required')+field('สิ้นสุด','endTime',a.endTime,'time','required')+'</div>'+
+      '<div class="trip-edit-grid"><label class="trip-edit-field">ประเภท<select name="category">'+Object.entries(M.categories).map(([key,label])=>'<option value="'+key+'" '+(a.category===key?'selected':'')+'>'+esc(label)+'</option>').join('')+'</select></label>'+field('ค่าใช้จ่ายรวมทั้งกลุ่ม (บาท)','cost',a.cost,'number','min="0" max="10000000" step="0.01" required')+'</div>'+
+      '<label class="trip-edit-field">รายละเอียด<textarea name="description" maxlength="1200" rows="3">'+esc(a.description)+'</textarea></label>'+
+      '<div class="trip-edit-grid">'+field('หมายเหตุค่าใช้จ่าย','costNote',a.costNote,'text','maxlength="240"')+field('เคล็ดลับ','tips',a.tips,'text','maxlength="500"')+'</div>'+
+      '<p class="small muted">เมื่อแก้จุดแวะ ระบบจะคำนวณงบใหม่และถอดแหล่งอ้างอิงเดิมของจุดนี้ออก ราคายังเป็นประมาณการ</p><div class="trip-edit-footer"><button type="button" class="button secondary" data-action="close-dialog">ยกเลิก</button><button type="submit" class="button primary">บันทึกจุดแวะ</button></div><p class="form-error" id="activityEditError" role="alert" hidden></p></form>');
+    $('activityEditForm').querySelector('[name="title"]').focus();
+  }
+  function editStay(dayIndex) {
+    const a=state.plan?.days[dayIndex]?.accommodation;if(!a)return;
+    dialog('แก้ที่พักคืนที่ '+(dayIndex+1),'<form id="stayEditForm" data-day-index="'+dayIndex+'" class="trip-edit-form"><label class="trip-edit-field">ชื่อที่พัก<input name="name" maxlength="200" minlength="2" required value="'+esc(a.name)+'"></label><label class="trip-edit-field">ค่าใช้จ่ายต่อคืนสำหรับทั้งกลุ่ม (บาท)<input name="pricePerNight" type="number" min="0" max="10000000" step="0.01" required value="'+esc(a.pricePerNight)+'"></label><label class="trip-edit-field">ชื่อสำหรับค้นหาใน Maps<input name="mapQuery" maxlength="240" value="'+esc(a.mapQuery)+'"></label><label class="trip-edit-field">รายละเอียด<textarea name="highlights" maxlength="500" rows="2">'+esc(a.highlights)+'</textarea></label><p class="small muted">ระบบจะคำนวณงบใหม่และถอดแหล่งอ้างอิงเดิมของที่พักนี้ออก ราคายังเป็นประมาณการ</p><div class="trip-edit-footer"><button type="button" class="button secondary" data-action="close-dialog">ยกเลิก</button><button type="submit" class="button primary">บันทึกที่พัก</button></div><p class="form-error" id="stayEditError" role="alert" hidden></p></form>');
+  }
+  function editBudget() {
+    dialog('แก้งบรวมของทริป','<form id="budgetEditForm" class="trip-edit-form"><label class="trip-edit-field">งบรวมทั้งทริปสำหรับทุกคน (บาท)<input name="budget" type="number" min="500" max="10000000" step="1" required value="'+esc(state.plan.totalBudget)+'"></label><p class="small muted">ประมาณการของแต่ละกิจกรรมจะยังคงเดิม ระบบคำนวณยอดคงเหลือหรือเกินงบใหม่</p><div class="trip-edit-footer"><button type="button" class="button secondary" data-action="close-dialog">ยกเลิก</button><button type="submit" class="button primary">บันทึกงบ</button></div><p class="form-error" id="budgetEditError" role="alert" hidden></p></form>');
+  }
+  function toggleTripMode(open) {
+    if(!state.plan)return;
+    state.tripMode=open;
+    $('resultScreen').classList.toggle('trip-active',open);
+    $('tripModePanel').hidden=!open;
+    if(open){
+      if(state.plan.startDate){const today=new Date(Date.now()+7*3600000).toISOString().slice(0,10);const offset=Math.floor((Date.parse(today+'T00:00:00Z')-Date.parse(state.plan.startDate+'T00:00:00Z'))/86400000);if(offset>=0&&offset<state.plan.days.length)state.activeDay=offset;}
+      renderTripMode();$('tripModeTitle').focus();$('tripModePanel').scrollIntoView({block:'start',behavior:'auto'});
+    }else{renderPlan();$('resultTitle').focus();$('resultScreen').scrollIntoView({block:'start',behavior:'auto'});}
+  }
+  function renderTripMode() {
+    const p=state.plan;if(!p)return;
+    const day=p.days[state.activeDay],done=new Set(p.completedStopIds),next=day.activities.find(a=>!done.has(a.id));
+    const finished=day.activities.filter(a=>done.has(a.id)).length,progress=Math.round(finished/day.activities.length*100);
+    const date=p.startDate?M.dateForDay(p.startDate,state.activeDay):'เลือกวันเดินทางในแผนได้';
+    const tabs=p.days.map((d,i)=>'<button class="trip-day-chip '+(i===state.activeDay?'active':'')+'" data-trip-day="'+i+'" '+(i===state.activeDay?'aria-current="date"':'')+'>วัน '+d.dayNumber+'</button>').join('');
+    const cards=day.activities.map((a,i)=>{
+      const prev=day.activities[i-1],routeKey=state.activeDay+':'+(prev?.id||'')+':'+a.id,route=state.routeResults.get(routeKey);
+      const directions=prev?M.directionsUrl(prev.mapQuery,a.mapQuery):M.mapUrl(a.mapQuery);
+      const routeUi=prev?'<div class="trip-leg"><span>'+icon('route')+'จากจุดก่อนหน้า</span><a href="'+esc(directions)+'" target="_blank" rel="noopener noreferrer">เปิดเส้นทางใน Maps ↗</a>'+
+        (p.travelMode==='car'&&state.backend?.routesConfigured?'<button data-route="'+esc(routeKey)+'" '+(state.routePending.has(routeKey)?'disabled':'')+'>'+(route?.loading?'กำลังตรวจ…':route?.durationMinutes?'ตรวจอีกครั้ง':'ตรวจเวลาเดินทาง')+'</button>':'')+
+        (route?.durationMinutes?'<strong>ประมาณ '+route.durationMinutes+' นาที · '+M.fmt(route.distanceKm)+' กม.</strong><small>Google Routes ตรวจเมื่อ '+esc(new Date(route.checkedAt).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'}))+' · เวลาอาจเปลี่ยนตามการจราจร</small>':route?.error?'<small class="trip-route-error">'+esc(route.error)+'</small>':'')+'</div>':'';
+      return '<article class="trip-stop '+(done.has(a.id)?'done':'')+'">'+routeUi+'<div class="trip-stop-main"><span class="trip-stop-number">'+String(i+1).padStart(2,'0')+'</span><div><span class="trip-stop-time">'+esc(a.time)+'–'+esc(a.endTime)+'</span><h3>'+esc(a.title)+'</h3><p>'+esc(a.location)+'</p><span class="trip-stop-cost">'+(a.cost?'ประมาณ ฿'+M.fmt(a.cost)+' ทั้งกลุ่ม':'ไม่มีค่าใช้จ่ายเพิ่ม')+'</span></div></div><div class="trip-stop-actions"><a class="button secondary" href="'+esc(M.mapUrl(a.mapQuery))+'" target="_blank" rel="noopener noreferrer">'+icon('pin')+'ดูสถานที่</a><button class="button secondary" data-edit-stop="'+state.activeDay+':'+i+'">'+icon('edit')+'แก้</button><button class="button '+(done.has(a.id)?'secondary':'primary')+'" data-trip-done="'+esc(a.id)+'">'+icon('check')+(done.has(a.id)?'ยกเลิกที่ไปแล้ว':'ไปแล้ว')+'</button></div></article>';
+    }).join('');
+    $('tripModePanel').innerHTML='<div class="trip-mode-head"><div><span class="eyebrow">ON THE ROAD</span><h1 id="tripModeTitle" tabindex="-1">แผนวันนี้ · '+esc(p.destination)+'</h1><p>วันที่ '+day.dayNumber+' / '+p.days.length+' · '+esc(date)+'</p></div><button class="button secondary" data-action="trip-exit">กลับไปดูแผนเต็ม</button></div><div class="trip-day-strip" aria-label="เลือกวันเดินทาง">'+tabs+'</div><div class="trip-progress"><span>ไปแล้ว '+finished+' / '+day.activities.length+' จุด</span><strong>'+progress+'%</strong><div role="progressbar" aria-label="ความคืบหน้าวันนี้" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+progress+'"><span style="width:'+progress+'%"></span></div></div><div class="trip-next"><span class="eyebrow">'+(next?'จุดหมายถัดไป':'เที่ยวครบวันนี้แล้ว')+'</span><h2>'+esc(next?.title||'พักผ่อนและตรวจแผนวันถัดไป')+'</h2><p>'+(next?esc(next.time+' · '+next.location):'จุดแวะทั้งหมดถูกทำเครื่องหมายว่าไปแล้ว')+'</p>'+(next?'<a class="button primary" href="'+esc(M.mapUrl(next.mapQuery))+'" target="_blank" rel="noopener noreferrer">'+icon('navigation')+'นำทางไปจุดนี้ ↗</a>':'')+'</div><div class="trip-mode-note">'+(p.travelMode==='car'&&!state.backend?.routesConfigured?'เวลาเดินทางในแอปต้องตั้ง GOOGLE_ROUTES_API_KEY บน GAS ระหว่างนี้เปิดเส้นทางใน Google Maps ได้':'เวลาเดินทางที่ตรวจเป็นประมาณการจาก Google Routes ตามชื่อสถานที่และสภาพจราจร ณ เวลาตรวจ ควรยืนยันจุดรับส่งใน Maps')+' · แผนและจุดที่ไปแล้วบันทึกในอุปกรณ์นี้</div><div class="trip-stops-heading"><h2>ลำดับจุดแวะ</h2><button class="button secondary small-button" data-add-stop="'+state.activeDay+'">+ เพิ่มจุดแวะ</button></div><div class="trip-stop-list">'+cards+'</div>';
+    const startMs=Date.parse(p.startDate+'T00:00:00Z');
+    const selectedDate=Number.isFinite(startMs)?new Date(startMs+state.activeDay*86400000).toISOString().slice(0,10):'';
+    const today=new Date(Date.now()+7*3600000).toISOString().slice(0,10);
+    $('tripModeTitle').textContent=(selectedDate===today?'แผนวันนี้':'แผนวันที่ '+day.dayNumber)+' · '+p.destination;
+    $('tripModePanel').querySelector('.trip-mode-head p').textContent+=' · ค่าใช้จ่ายประมาณ ฿'+M.fmt(day.dailyExpense.total);
+    const headActions=document.createElement('div');headActions.className='trip-head-actions';
+    const exitButton=$('tripModePanel').querySelector('[data-action="trip-exit"]');headActions.append(exitButton);
+    const shareButton=document.createElement('button');shareButton.type='button';shareButton.className='button secondary';shareButton.dataset.action='location';shareButton.innerHTML=icon('navigation')+'ส่งพิกัดตอนนี้';headActions.prepend(shareButton);
+    $('tripModePanel').querySelector('.trip-mode-head').append(headActions);
+    $('tripModePanel').querySelector('.trip-mode-note').textContent=(p.travelMode==='car'?(state.backend?.routesConfigured?'เวลาเดินทางที่ตรวจเป็นประมาณการ ณ เวลาตรวจ ควรยืนยันจุดรับส่งใน Maps':'หากต้องการเห็นเวลาเดินทางในแอป ให้ตั้งคีย์ Google Routes ในเมนูการเชื่อมต่อ ระหว่างนี้เปิดเส้นทางใน Maps ได้'):'เปิดเส้นทางและเวลาล่าสุดใน Maps ก่อนออกเดินทาง')+' · แผนและจุดที่ไปแล้วบันทึกในอุปกรณ์นี้';
+  }
+  async function checkRoute(key) {
+    if(!state.plan||state.routePending.has(key)||!state.backend?.routesConfigured)return;
+    const dayIndex=key.split(':')[0],day=state.plan.days[Number(dayIndex)];
+    if(!day)return;
+    const stop=day.activities.findIndex((a,i)=>i>0&&key===dayIndex+':'+day.activities[i-1].id+':'+a.id);
+    if(stop<1)return;
+    const previous=day.activities[stop-1],current=day.activities[stop];
+    const planId=state.plan.id;
+    state.routePending.add(key);state.routeResults.set(key,{loading:true});renderTripMode();
+    try{
+      await connect();const query=a=>a.mapQuery.toLowerCase().includes(state.plan.destination.toLowerCase())?a.mapQuery:a.mapQuery+', '+state.plan.destination;
+      const result=checkedResult(await rpc('getRouteEstimate',[{from:query(previous),to:query(current),clientId}]));
+      if(state.plan?.id===planId)state.routeResults.set(key,result.route);
+    }catch(error){if(state.plan?.id===planId)state.routeResults.set(key,{error:error.message});}
+    finally{state.routePending.delete(key);if(state.tripMode)renderTripMode();}
+  }
   function renderBudget() {
     const p=state.plan,e=p.totalExpense;const used=p.totalBudget>0?Math.min(100,Math.round(e.total/p.totalBudget*100)):100;
     const labels={food:'อาหาร & คาเฟ่',transport:'การเดินทาง',attractions:'เที่ยวชม & กิจกรรม',accommodation:'ที่พัก',miscellaneous:'ช้อปปิ้ง & อื่น ๆ'};
-    $('budgetPanel').innerHTML='<h3>งบประมาณของทริป'+icon('wallet')+'</h3><div class="budget-ring" style="--used:'+used+'%"><div><small>ประมาณการทั้งกลุ่ม</small><strong>฿'+M.fmt(e.total)+'</strong><small>จากงบ ฿'+M.fmt(p.totalBudget)+'</small></div></div>'+Object.keys(labels).map(k=>'<div class="budget-line"><span>'+labels[k]+'</span><strong>฿'+M.fmt(e[k])+'</strong></div>').join('')+'<div class="budget-line total"><span>รวมทั้งหมด</span><strong>฿'+M.fmt(e.total)+'</strong></div><div class="budget-line remaining '+(e.remaining<0?'over':'')+'"><span>'+(e.remaining<0?'เกินงบ':'งบคงเหลือ')+'</span><strong>฿'+M.fmt(Math.abs(e.remaining))+'</strong></div><p class="price-note">'+esc(p.priceNote)+'<br>ควรตรวจราคา เวลาเปิด และเส้นทางอีกครั้งก่อนออกเดินทาง</p>';
+    $('budgetPanel').innerHTML='<div class="budget-title-row"><h3>งบประมาณของทริป'+icon('wallet')+'</h3><button class="button secondary small-button" data-action="edit-budget">แก้งบ</button></div><div class="budget-ring" style="--used:'+used+'%"><div><small>ประมาณการทั้งกลุ่ม</small><strong>฿'+M.fmt(e.total)+'</strong><small>จากงบ ฿'+M.fmt(p.totalBudget)+'</small></div></div>'+Object.keys(labels).map(k=>'<div class="budget-line"><span>'+labels[k]+'</span><strong>฿'+M.fmt(e[k])+'</strong></div>').join('')+'<div class="budget-line total"><span>รวมทั้งหมด</span><strong>฿'+M.fmt(e.total)+'</strong></div><div class="budget-line remaining '+(e.remaining<0?'over':'')+'"><span>'+(e.remaining<0?'เกินงบ':'งบคงเหลือ')+'</span><strong>฿'+M.fmt(Math.abs(e.remaining))+'</strong></div><p class="price-note">'+esc(p.priceNote)+'<br>ควรตรวจราคา เวลาเปิด และเส้นทางอีกครั้งก่อนออกเดินทาง</p>';
   }
   function renderPacking() {
     const p=state.plan,packed=new Set(p.packedItems);
@@ -288,15 +370,15 @@
     if(state.storageRaw){const button=document.createElement('button');button.className='text-button';button.textContent='ดาวน์โหลดข้อมูลเดิม';button.dataset.action='recover-storage';$('storageNotice').append(button);}
     $('savedList').innerHTML=plans.length?plans.map(p=>'<article class="panel saved-card"><span class="saved-destination">'+icon('pin')+esc(p.destination)+'</span><button class="icon-button" data-delete="'+esc(p.id)+'" aria-label="ลบทริป '+esc(p.tripTitle)+'">'+icon('trash')+'</button><h3>'+esc(p.tripTitle)+'</h3><p>'+esc(p.summary.slice(0,120))+'</p><span class="saved-date">'+esc(new Date(p.createdAt).toLocaleDateString('th-TH'))+'</span><div class="saved-card-meta"><span>'+p.days.length+' วัน</span><span>'+p.totalTravelers+' คน</span><span>งบ ฿'+M.fmt(p.totalBudget)+'</span></div><button class="button secondary" data-open="'+esc(p.id)+'">เปิดแผนทริป '+icon('arrow-right')+'</button></article>').join(''):'<div class="empty-state">'+icon('bookmark')+'<h3>'+(term?'ยังไม่พบทริปที่ค้นหา':'เก็บทริปแรกของคุณไว้ที่นี่')+'</h3><p>'+(term?'ลองค้นชื่อทริปหรือจุดหมายอื่น':'สร้างแผนใหม่แล้วเราจะบันทึกให้อัตโนมัติ<br>หรือเพิ่มแผนจากไฟล์ JSON ที่เคยส่งออก')+'</p><button class="button primary" data-view="planner">วางแผนทริป '+icon('arrow-right')+'</button><button class="button ghost" data-action="import">นำเข้าแผน</button></div>';
   }
-  function openSaved(id) {if(state.busy){notice('กำลังสร้างแผนใหม่ กรุณารอหรือหยุดสร้างวันถัดไปก่อน');return;}const p=state.saved.find(v=>v.id===id);if(!p)return;state.plan=p;state.activeDay=0;renderPlan();screen('resultScreen');setView('planner');$('resultTitle').focus();$('resultScreen').scrollIntoView({block:'start',behavior:'auto'});}
+  function openSaved(id) {if(state.busy){notice('กำลังสร้างแผนใหม่ กรุณารอหรือหยุดสร้างวันถัดไปก่อน');return;}const p=state.saved.find(v=>v.id===id);if(!p)return;state.plan=p;state.activeDay=0;state.tripMode=false;state.routeResults.clear();$('resultScreen').classList.remove('trip-active');$('tripModePanel').hidden=true;renderPlan();screen('resultScreen');setView('planner');$('resultTitle').focus();$('resultScreen').scrollIntoView({block:'start',behavior:'auto'});}
 
   function dialog(title,html) {$('dialogTitle').textContent=title;$('dialogBody').innerHTML=html;if(!$('appDialog').open)$('appDialog').showModal();}
   function closeDialog() {if($('appDialog').open)$('appDialog').close();}
   function showConnection() {
     const s=state.backend;
     const status=!navigator.onLine?'กำลังออฟไลน์':!s?'ยังเชื่อมต่อ GAS ไม่ได้':!s.enabled?'พักการสร้างแผนใหม่':s.aiConfigured?'เชื่อมต่อ GAS แล้ว พบคีย์ AI':'เชื่อมต่อ GAS แล้ว ยังไม่มีคีย์ AI';
-    const rows=[['OPENROUTER_API_KEY','คีย์ AI หลัก (ยังรองรับ AI_API_KEY เดิม)',s?s.aiConfigured?'พบคีย์':'ยังไม่มี':'ยังตรวจไม่ได้'],['BRAVE_API_KEY','ค้นเว็บประกอบแผน ไม่บังคับ',s?s.searchConfigured?'พบคีย์':'ไม่ได้เปิด':'ยังตรวจไม่ได้'],['AI_MODEL','โมเดล OpenRouter',s?s.model:'ดูค่าเริ่มต้นใน Code.gs'],['MAX_DAILY_AI_REQUESTS','เพดานเรียก AI ต่อวันทั้งแอป',s?String(s.aiDailyLimit):'60'],['MAX_DAILY_SEARCH_REQUESTS','เพดานค้นเว็บต่อวันทั้งแอป',s?String(s.searchDailyLimit):'80'],['ALLOWED_PARENT_ORIGINS','โดเมนที่เชื่อมต่อกับ GAS ได้','GitHub Pages + localhost'],['APP_ENABLED','เปิด/พักการสร้างแผนใหม่',s?String(s.enabled):'true']];
-    dialog('การเชื่อมต่อ & API','<div class="connection-status-card"><strong>'+esc(status)+'</strong><p>ตรวจเฉพาะสถานะการตั้งค่า คีย์ทั้งหมดอยู่บน GAS และไม่ส่งมาที่หน้าเว็บ</p></div><table class="settings-table"><thead><tr><th>ชื่อใน Script Properties</th><th>ใช้ทำอะไร</th><th>สถานะ / ค่า</th></tr></thead><tbody>'+rows.map(row=>'<tr><td><code>'+esc(row[0])+'</code></td><td>'+esc(row[1])+'</td><td class="model-name">'+esc(row[2])+'</td></tr>').join('')+'</tbody></table><p>แผนที่ใช้ OpenStreetMap และ Photon ไม่ต้องใส่ Google Maps API key ค้นหาและเลือกจุดในหน้าเว็บได้เลย บริการนี้ต้องออนไลน์ ส่วนพิกัดที่ยืนยันจะส่งไป GAS/AI เมื่อสร้างแผน</p><h3>ตั้งค่าที่เดียว แล้วใช้ได้ทั้งมือถือและคอม</h3><p>เปิด GAS → Project Settings → Script Properties เพื่อใส่หรือแก้คีย์ AI หากมี AI_API_KEY อยู่แล้ว ใช้ต่อได้ทันที อย่าใส่คีย์ใน GitHub หรือหน้าเว็บ</p><p>URL ของ GAS และลิงก์โปรเจกต์อยู่ด้านบนของ app-config.js ส่วนโมเดลและชื่อคีย์ทั้งหมดอยู่ด้านบนของ apps-script/Code.gs</p><a class="button primary" href="'+esc(C.gasEditorUrl)+'" target="_blank" rel="noopener noreferrer">เปิดตั้งค่าใน GAS ↗</a><button class="button secondary" data-action="reconnect">ตรวจการเชื่อมต่ออีกครั้ง</button><h3>การติดตั้งบนมือถือ</h3><p>Android ใช้เมนูเบราว์เซอร์ → ติดตั้งแอป / เพิ่มไปยังหน้าจอหลัก ส่วน iPhone เปิดใน Safari → แชร์ → เพิ่มไปยังหน้าจอหลัก แผนจะอยู่ในเบราว์เซอร์หรือแอปที่คุณใช้บันทึก</p>'+(state.installPrompt?'<button class="button secondary" data-action="install">ติดตั้ง TripPlanner</button>':'')+'<p class="small">TripPlanner v'+esc(C.version)+'</p>');
+    const rows=[['OPENROUTER_API_KEY','คีย์ AI หลัก (ยังรองรับ AI_API_KEY เดิม)',s?s.aiConfigured?'พบคีย์':'ยังไม่มี':'ยังตรวจไม่ได้'],['BRAVE_API_KEY','ค้นเว็บประกอบแผน ไม่บังคับ',s?s.searchConfigured?'พบคีย์':'ไม่ได้เปิด':'ยังตรวจไม่ได้'],['GOOGLE_ROUTES_API_KEY','ตรวจเวลาและระยะทางรถยนต์ในโหมดเดินทาง',s?s.routesConfigured?'พบคีย์':'ยังไม่ได้ตั้ง':'ยังตรวจไม่ได้'],['AI_MODEL','โมเดล OpenRouter',s?s.model:'ดูค่าเริ่มต้นใน Code.gs'],['MAX_DAILY_AI_REQUESTS','เพดานเรียก AI ต่อวันทั้งแอป',s?String(s.aiDailyLimit):'60'],['MAX_DAILY_SEARCH_REQUESTS','เพดานค้นเว็บต่อวันทั้งแอป',s?String(s.searchDailyLimit):'80'],['MAX_DAILY_ROUTE_REQUESTS','เพดานตรวจเส้นทางต่อวันทั้งแอป',s?String(s.routeDailyLimit):'100'],['ALLOWED_PARENT_ORIGINS','โดเมนที่เชื่อมต่อกับ GAS ได้','GitHub Pages + localhost'],['APP_ENABLED','เปิด/พักการสร้างแผนใหม่',s?String(s.enabled):'true']];
+    dialog('การเชื่อมต่อ & API','<div class="connection-status-card"><strong>'+esc(status)+'</strong><p>ตรวจเฉพาะสถานะการตั้งค่า คีย์ทั้งหมดอยู่บน GAS และไม่ส่งมาที่หน้าเว็บ</p></div><table class="settings-table"><thead><tr><th>ชื่อใน Script Properties</th><th>ใช้ทำอะไร</th><th>สถานะ / ค่า</th></tr></thead><tbody>'+rows.map(row=>'<tr><td><code>'+esc(row[0])+'</code></td><td>'+esc(row[1])+'</td><td class="model-name">'+esc(row[2])+'</td></tr>').join('')+'</tbody></table><p>เลือกสถานที่บนแผนที่ใช้ OpenStreetMap และ Photon โดยไม่ต้องมีคีย์ ส่วนการตรวจเวลาเดินทางรถยนต์ในแอปใช้ Google Routes API และต้องตั้ง GOOGLE_ROUTES_API_KEY ใน GAS ก่อน หากยังไม่มีคีย์ เปิดเส้นทางใน Google Maps ได้ตามปกติ</p><h3>ตั้งค่าที่เดียว แล้วใช้ได้ทั้งมือถือและคอม</h3><p>เปิด GAS → Project Settings → Script Properties เพื่อใส่หรือแก้คีย์ ห้ามใส่คีย์ใน GitHub หรือหน้าเว็บ ตั้งค่าเพดานคำขอและงบใน Google Cloud ก่อนเปิด Routes API</p><p>URL ของ GAS และลิงก์โปรเจกต์อยู่ด้านบนของ app-config.js ส่วนโมเดลและชื่อคีย์ทั้งหมดอยู่ด้านบนของ apps-script/Code.gs</p><a class="button primary" href="'+esc(C.gasEditorUrl)+'" target="_blank" rel="noopener noreferrer">เปิดตั้งค่าใน GAS ↗</a><button class="button secondary" data-action="reconnect">ตรวจการเชื่อมต่ออีกครั้ง</button><h3>การติดตั้งบนมือถือ</h3><p>Android ใช้เมนูเบราว์เซอร์ → ติดตั้งแอป / เพิ่มไปยังหน้าจอหลัก ส่วน iPhone เปิดใน Safari → แชร์ → เพิ่มไปยังหน้าจอหลัก แผนจะอยู่ในเบราว์เซอร์หรือแอปที่คุณใช้บันทึก</p>'+(state.installPrompt?'<button class="button secondary" data-action="install">ติดตั้ง TripPlanner</button>':'')+'<p class="small">TripPlanner v'+esc(C.version)+'</p>');
   }
   function showGuide() {
     dialog('วางแผน แล้วออกเดินทาง','<ol class="guide-steps"><li><strong>บอกจุดหมายและงบรวม</strong><br>กรอกต้นทาง ปลายทาง จำนวนวัน และผู้เดินทาง งบทุกยอดรวมทั้งกลุ่มและค่าที่พัก</li><li><strong>เลือกสไตล์ที่เข้ากับคุณ</strong><br>เลือกวิธีเดินทาง ความสนใจ และข้อจำกัด เช่น มีผู้สูงอายุหรืออาหารที่แพ้</li><li><strong>รอแผนตามขั้นตอนจริง</strong><br>เราจะค้นข้อมูล สร้างทีละช่วงวัน และรวมค่าใช้จ่าย ทริปยาวใช้เวลามากกว่า หากสะดุดให้กดลองสร้างต่อ</li><li><strong>ตรวจแผนก่อนใช้</strong><br>เลือกวัน เปิด Maps ดูแหล่งข้อมูล และเช็กงบ ราคาทุกยอดยังเป็นประมาณการ ควรตรวจเวลาเปิดและราคาจริงใกล้วันเดินทาง</li><li><strong>เก็บแผนไว้พกไปด้วย</strong><br>บันทึกให้อัตโนมัติในอุปกรณ์นี้ ส่งออก JSON เพื่อสำรองหรือย้ายอุปกรณ์ พิมพ์เป็น PDF และส่งออกภาพได้เป็นรายวัน</li></ol><p>แผนที่บันทึกแล้วเปิดอ่านออฟไลน์ได้ การสร้างแผนใหม่และเปิด Maps ต้องใช้อินเทอร์เน็ต ข้อมูลของคุณไม่ซิงก์ข้ามอุปกรณ์อัตโนมัติ</p><button class="button primary" data-action="close-dialog">เริ่มวางแผน</button>');
@@ -450,6 +532,9 @@
     if(action==='guide')showGuide();
     if(action==='connection')showConnection();
     if(action==='close-dialog')closeDialog();
+    if(action==='trip-mode')toggleTripMode(true);
+    if(action==='trip-exit')toggleTripMode(false);
+    if(action==='edit-budget')editBudget();
     if(action==='edit')editPlan();
     if(action==='stop')stopGeneration();
     if(action==='export')showJsonExport();
@@ -473,6 +558,15 @@
     const target=event.target.closest('button,a');if(!target)return;
     if(target.dataset.placeOpen){openPlacePicker(target.dataset.placeOpen);return;}
     if(target.dataset.placeCurrent){openPlacePicker(target.dataset.placeCurrent,true);return;}
+    if(target.dataset.editStop){const [day,stop]=target.dataset.editStop.split(':').map(Number);editStop(day,stop);return;}
+    if(target.dataset.editStay!==undefined){editStay(Number(target.dataset.editStay));return;}
+    if(target.dataset.addStop!==undefined){editStop(Number(target.dataset.addStop));return;}
+    if(target.dataset.moveStop){const [day,stop,direction]=target.dataset.moveStop.split(':').map(Number);try{applyPlanChange(M.changeActivity(state.plan,day,stop,'move',{direction}),'ย้ายจุดแวะแล้ว ตรวจเวลาเดินทางอีกครั้ง');}catch(error){notice(error.message,true);}return;}
+    if(target.dataset.removeStop){const [day,stop]=target.dataset.removeStop.split(':').map(Number);const a=state.plan?.days[day]?.activities[stop];if(a)dialog('ลบจุดแวะนี้','<p>ลบ “'+esc(a.title)+'” ออกจากแผนวันที่ '+(day+1)+' ใช่ไหม ค่าใช้จ่ายจะคำนวณใหม่</p><div class="delete-confirm"><button class="button secondary" data-action="close-dialog">ยกเลิก</button><button class="button danger" data-confirm-remove-stop="'+day+':'+stop+'">ลบจุดแวะ</button></div>');return;}
+    if(target.dataset.confirmRemoveStop){const [day,stop]=target.dataset.confirmRemoveStop.split(':').map(Number);try{applyPlanChange(M.changeActivity(state.plan,day,stop,'delete'),'ลบจุดแวะและคำนวณงบใหม่แล้ว');closeDialog();}catch(error){notice(error.message,true);}return;}
+    if(target.dataset.tripDay!==undefined){state.activeDay=Number(target.dataset.tripDay);renderTripMode();$('tripModeTitle').focus();return;}
+    if(target.dataset.tripDone){const completed=new Set(state.plan.completedStopIds);if(completed.has(target.dataset.tripDone))completed.delete(target.dataset.tripDone);else completed.add(target.dataset.tripDone);applyPlanChange(M.normalizePlan({...state.plan,completedStopIds:[...completed]}),'บันทึกความคืบหน้าแล้ว');return;}
+    if(target.dataset.route){checkRoute(target.dataset.route);return;}
     if(target.dataset.action){event.preventDefault();if(target.closest('.result-export'))target.closest('.result-export').open=false;handleAction(target.dataset.action).catch(error=>notice(error.message,true));}
     if(target.dataset.view){event.preventDefault();setView(target.dataset.view);}
     if(target.dataset.destination){$('destination').value=target.dataset.destination;state.destinationPlace=null;updatePreview();saveDraft();$('destination').focus();}
@@ -488,6 +582,17 @@
   $('dayTabs').addEventListener('keydown',event=>{let day=state.activeDay;if(event.key==='ArrowRight')day=(day+1)%state.plan.days.length;else if(event.key==='ArrowLeft')day=(day-1+state.plan.days.length)%state.plan.days.length;else if(event.key==='Home')day=0;else if(event.key==='End')day=state.plan.days.length-1;else return;event.preventDefault();setDay(day,true);});
   document.addEventListener('change',event=>{if(event.target.dataset.packed!==undefined&&state.plan){const item=state.plan.packingList[Number(event.target.dataset.packed)];const values=new Set(state.plan.packedItems);if(event.target.checked)values.add(item);else values.delete(item);state.plan.packedItems=[...values];savePlan(state.plan);renderPacking();}});
   $('tripForm').addEventListener('submit',generate);
+  document.addEventListener('submit',event=>{
+    const form=event.target;if(!['activityEditForm','stayEditForm','budgetEditForm'].includes(form.id))return;
+    event.preventDefault();const data=Object.fromEntries(new FormData(form));
+    try{
+      let updated;
+      if(form.id==='activityEditForm'){const day=Number(form.dataset.dayIndex),stop=Number(form.dataset.stopIndex);const base=stop<0?M.changeActivity(state.plan,day,-1,'add'):state.plan;const index=stop<0?base.days[day].activities.length-1:stop;updated=M.changeActivity(base,day,index,'edit',data);}
+      if(form.id==='stayEditForm')updated=M.changeStay(state.plan,Number(form.dataset.dayIndex),data);
+      if(form.id==='budgetEditForm')updated=M.changeBudget(state.plan,data.budget);
+      closeDialog();applyPlanChange(updated,'บันทึกการแก้ไขและคำนวณงบใหม่แล้ว');
+    }catch(error){const errorEl=form.querySelector('[role="alert"]');errorEl.textContent=error.message;errorEl.hidden=false;}
+  });
   $('tripForm').addEventListener('input',event=>{if(event.target.id==='origin'||event.target.id==='destination')state[event.target.id+'Place']=null;updatePreview();saveDraft();$('formError').hidden=true;if(!state.busy)$('generateLabel').textContent='สร้างแผนทริปของฉัน';});
   $('tripForm').addEventListener('change',()=>{updatePreview();saveDraft();});
   $('savedSearch').addEventListener('input',renderSaved);

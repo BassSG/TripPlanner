@@ -440,3 +440,83 @@
   .location-actions { flex-direction:column; }
   .location-actions > .button,.location-actions > button,.location-actions > a { flex:0 0 auto; width:100%; }
 }
+
+/* Focused travel mode and in-place itinerary editing. */
+@media screen {
+  #resultScreen.trip-active > :not(#tripModePanel) { display:none!important; }
+  .day-edit-toolbar,.activity-edit-actions,.trip-edit-footer,.trip-stop-actions,.trip-stops-heading { display:flex; align-items:center; gap:9px; flex-wrap:wrap; }
+  .day-edit-toolbar { justify-content:space-between; margin:-3px 0 17px; color:var(--muted); font-size:12px; }
+  .activity-edit-actions { margin-top:13px; padding-top:11px; border-top:1px solid var(--line); }
+  .activity-edit-actions .icon-button { border:1px solid var(--line); width:36px; height:36px; font-size:17px; }
+  .activity-edit-actions .icon-button .icon { width:16px; height:16px; }
+  .activity-edit-actions .icon-button:disabled { opacity:.35; cursor:default; }
+  .trip-edit-form { display:grid; gap:15px; }
+  .trip-edit-footer { position:sticky; bottom:-25px; z-index:1; padding:12px 0; border-top:1px solid var(--line); background:var(--paper); }
+  .trip-edit-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .trip-edit-field { display:grid; gap:6px; min-width:0; color:var(--text); font-size:12px; font-weight:600; }
+  .trip-edit-field input,.trip-edit-field textarea,.trip-edit-field select { width:100%; min-width:0; min-height:44px; padding:10px 12px; border:1px solid #415a76; border-radius:9px; background:#111d2c; color:var(--ink); color-scheme:dark; }
+  .trip-edit-field textarea { resize:vertical; }
+  .trip-edit-footer { justify-content:flex-end; }
+  .trip-mode-panel { max-width:1060px; margin:0 auto; padding:8px 0 35px; }
+  .trip-mode-head { display:flex; justify-content:space-between; align-items:flex-start; gap:15px; padding:22px 25px; border:1px solid #3a536f; border-radius:18px; background:linear-gradient(120deg,#1b3048,#112035); }
+  .trip-mode-head .eyebrow,.trip-next .eyebrow { color:#cfb884; }
+  .trip-mode-head h1 { font-size:clamp(23px,3vw,34px); margin:7px 0 4px; }
+  .trip-mode-head p { color:#a9c0d8; margin:0; }
+  .trip-head-actions { display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+  .trip-head-actions .icon { width:16px; height:16px; }
+  .trip-day-strip { display:flex; gap:7px; margin:18px 0; padding-bottom:6px; overflow:auto; scrollbar-color:#456483 transparent; }
+  .trip-day-chip { flex:none; min-width:70px; min-height:44px; padding:7px 13px; border:1px solid #36516e; border-radius:10px; background:#18283c; color:#b8cee3; font-weight:700; }
+  .trip-day-chip.active { border-color:#85b6df; background:#294969; color:#e0eefb; }
+  .trip-progress { display:grid; grid-template-columns:1fr auto; gap:5px 15px; margin-bottom:15px; color:#b6cadf; font-size:12px; }
+  .trip-progress strong { color:#d9e8f6; }
+  .trip-progress > div { grid-column:1/-1; height:7px; border-radius:20px; background:#263c55; overflow:hidden; }
+  .trip-progress > div > span { display:block; height:100%; border-radius:20px; background:#8bbce1; }
+  .trip-next { padding:26px 28px; border:1px solid #6a644f; border-radius:16px; background:linear-gradient(130deg,#2c3040,#182942 72%); }
+  .trip-next h2 { font-size:clamp(22px,3vw,32px); margin:8px 0; }
+  .trip-next p { color:#b7cadc; }
+  .trip-next .button { min-width:210px; }
+  .trip-mode-note { margin:14px 0 23px; color:#a8bad0; font-size:12px; line-height:1.8; }
+  .trip-stops-heading { justify-content:space-between; margin:22px 0 10px; }
+  .trip-stops-heading h2 { margin:0; font-size:19px; }
+  .trip-stop-list { display:grid; gap:13px; }
+  .budget-title-row { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; }
+  .budget-title-row h3 { margin-top:5px; }
+  .budget-title-row .button { flex:none; }
+  .stay-edit-button { display:flex; width:max-content; margin-top:10px; }
+  .trip-stop { padding:17px 20px; border:1px solid #344a64; border-radius:14px; background:#162336; }
+  .trip-stop.done { opacity:.72; border-color:#3b625d; }
+  .trip-stop-main { display:flex; gap:15px; align-items:flex-start; }
+  .trip-stop-number { display:grid; place-items:center; width:35px; height:35px; flex:none; border-radius:10px; background:#29435f; color:#b7d9f1; font-weight:800; font-size:12px; }
+  .trip-stop-main h3 { font-size:18px; margin:2px 0; }
+  .trip-stop-main p { margin:0 0 4px; color:#acc2d7; font-size:12px; }
+  .trip-stop-time,.trip-stop-cost { color:#b8cde1; font-size:12px; }
+  .trip-stop-cost { color:#cfb884; }
+  .trip-stop-actions { margin:15px 0 0 50px; }
+  .trip-stop-actions .button { min-height:42px; font-size:12px; }
+  .trip-stop-actions .icon { width:16px; height:16px; }
+  .trip-leg { display:flex; align-items:center; flex-wrap:wrap; gap:7px 12px; margin:0 0 15px 50px; padding:10px 13px; border:1px solid #344e6b; border-radius:9px; background:#112033; font-size:11px; }
+  .trip-leg > span { display:inline-flex; align-items:center; gap:5px; color:#a9bfd6; }
+  .trip-leg .icon { width:15px; height:15px; }
+  .trip-leg a,.trip-leg button { color:#a9d5f3; text-decoration:underline; font-weight:600; }
+  .trip-leg button:disabled { opacity:.6; }
+  .trip-leg strong { color:#dce9f4; }
+  .trip-leg small { flex:1 1 100%; color:#9caec0; font-size:10px; }
+  .trip-leg .trip-route-error { color:#e0aba7; }
+}
+@media screen and (max-width:760px) {
+  .trip-mode-panel { padding-top:0; }
+  .trip-mode-head { display:block; padding:19px; }
+  .trip-head-actions { margin-top:13px; display:grid; grid-template-columns:1fr; }
+  .trip-head-actions .button { width:100%; }
+  .trip-next { padding:21px; }
+  .trip-next .button { width:100%; }
+  .trip-stop { padding:15px; }
+  .trip-stop-main { gap:10px; }
+  .trip-stop-main h3 { font-size:16px; }
+  .trip-stop-actions,.trip-leg { margin-left:0; }
+  .trip-stop-actions .button { flex:1 1 auto; }
+  .trip-edit-grid { grid-template-columns:1fr; }
+  .day-edit-toolbar { align-items:flex-start; }
+  .stay-edit-button { width:100%; }
+}
+@media print { .day-edit-toolbar,.activity-edit-actions,.trip-mode-panel { display:none!important; } }
