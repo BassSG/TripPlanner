@@ -11,6 +11,7 @@
  */
 const TRIP_CONFIG = Object.freeze({
   NAME: 'TripPlanner', VERSION: '8.1.0',
+  FAVICON_URL: 'https://basssg.github.io/TripPlanner/assets/icon-192.png?v=8.1.0',
   AI_ENDPOINT: 'https://openrouter.ai/api/v1/chat/completions',
   SEARCH_ENDPOINT: 'https://api.search.brave.com/res/v1/web/search',
   SEARCH_COUNTRY: 'ALL', SEARCH_LANGUAGE: 'th', // Brave does not support country=TH.
@@ -39,6 +40,7 @@ function doGet(e) {
       .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
   }
   return HtmlService.createHtmlOutputFromFile('index').setTitle(TRIP_CONFIG.NAME)
+    .setFaviconUrl(TRIP_CONFIG.FAVICON_URL)
     .addMetaTag('viewport', 'width=device-width, initial-scale=1, viewport-fit=cover')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }

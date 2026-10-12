@@ -25,7 +25,7 @@ Build checks validate JavaScript/GAS syntax, JSON manifests, PWA icon dimensions
 - Measured text/background contrast: primary **13.19:1**, secondary **6.51:1**, primary button **8.11:1**, selected navigation **6.08:1**, placeholder **6.49:1**.
 - Opened the existing real 5-day plan and downloaded its first-day PNG. Logo, Thai wrapping, activities, lodging, estimate note and new palette were visually verified in the exported file.
 - All **28 regression tests**, syntax/manifests/icon dimensions, portable SVG wordmarks and generated output checks pass for version 8.1. Brand assets and the offline shell participate in cache versioning.
-- Published to the existing GAS deployment as version **121**, keeping Script Properties and access unchanged.
+- Published to the existing GAS deployment as version **122**, keeping Script Properties and access unchanged. The outer GAS page also receives the new favicon through HtmlOutput, separately from the embedded HTML.
 
 ## Prior version 8.0 browser and API checks
 
