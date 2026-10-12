@@ -21,7 +21,7 @@ function setup(options={}) {
     CacheService:{getScriptCache:()=>({get:key=>cache.get(key)||null,put:(key,value)=>cache.set(key,value),remove:key=>cache.delete(key)})},
     LockService:{getScriptLock:()=>({tryLock:()=>true,releaseLock:()=>{}})},
     Utilities:{getUuid:randomUUID,sleep:()=>{},DigestAlgorithm:{SHA_256:'sha256'},computeDigest:(_,value)=>[...createHash('sha256').update(value).digest()],newBlob:value=>({getBytes:()=>Buffer.from(value)}),formatDate:(date,zone,format)=>format==='yyyy-MM-dd'?'2026-10-12':format==='yyyyMMddHH'?'2026101214':'2026-10-12'},
-    UrlFetchApp:{fetch:(url,settings)=>{calls.push({url,settings});if(options.fetch)return options.fetch(url,settings,response);if(url.includes('brave'))return response(200,{web:{results:[{title:'Official source',description:'Travel information',url:'https://example.com/travel'}]}});const prompt=JSON.parse(settings.payload).messages[1].content;const match=prompt.match(/สร้างเฉพาะวันที่ (\d+) ถึง (\d+)/);return response(200,{choices:[{finish_reason:'stop',message:{content:JSON.stringify(chunk(Number(match[1]),Number(match[2])-Number(match[1])+1))}}]});}}
+    UrlFetchApp:{fetch:(url,settings)=>{calls.push({url,settings});if(options.fetch)return options.fetch(url,settings,response);if(url.includes('brave'))return response(200,{web:{results:[{title:'Chiang Mai official travel',description:'Travel information เชียงใหม่',url:'https://example.com/travel'}]}});const prompt=JSON.parse(settings.payload).messages[1].content;const match=prompt.match(/สร้างเฉพาะวันที่ (\d+) ถึง (\d+)/);return response(200,{choices:[{finish_reason:'stop',message:{content:JSON.stringify(chunk(Number(match[1]),Number(match[2])-Number(match[1])+1))}}]});}}
   };
   vm.createContext(ctx);vm.runInContext(source,ctx);
   return {ctx,props,cache,calls,logs,response};
@@ -58,6 +58,9 @@ test('Brave failures and empty results never imply price verification',()=>{
 });
 test('Brave uses supported search_lang and current trip year; deduplicates sources',()=>{
   const {ctx,calls}=setup({properties:{BRAVE_API_KEY:'test-search-key'}});const prepared=ctx.prepareTrip(input);assert.equal(prepared.sources.length,1);for(const call of calls){const url=new URL(call.url);assert.equal(url.searchParams.get('search_lang'),'th');assert.equal(url.searchParams.get('country'),'ALL');assert.ok(url.searchParams.get('q').includes('2026'));assert.equal(url.searchParams.has('lang'),false);}
+});
+test('search results for a different province never become itinerary sources',()=>{
+  const {ctx}=setup({properties:{BRAVE_API_KEY:'test-search-key'}});const prepared=ctx.prepareTrip({...input,destination:'กาญจนบุรี'});assert.equal(prepared.success,true);assert.equal(prepared.sources.length,0);assert.ok(prepared.warnings.some(w=>w.includes('ผลค้นเว็บไม่ตรง')));assert.equal(ctx.sourceMatchesDestination_({title:'Kanchanaburi travel guide',url:'https://example.com/kanchanaburi'},'กาญจนบุรี'),true);
 });
 test('persistent daily ceiling survives cache loss and resets on a new Thai date',()=>{
   const {ctx,props,cache,calls}=setup({properties:{MAX_DAILY_AI_REQUESTS:'1'}});const prepared=ctx.prepareTrip({...input,days:5});assert.equal(ctx.generateTripDays(prepared.ticket,1).success,true);assert.equal(ctx.generateTripDays(prepared.ticket,5).code,'DAILY_LIMIT');assert.equal(calls.length,1);cache.clear();assert.throws(()=>ctx.reserveUsage_('AI',1));props.set('TRIP_USAGE_AI',JSON.stringify({date:'2026-10-11',count:999}));assert.doesNotThrow(()=>ctx.reserveUsage_('AI',1));

@@ -2,7 +2,7 @@
 
 ## Automated checks
 
-`npm run check` and `npm test` pass. **26 regression tests** cover:
+`npm run check` and `npm test` pass. **28 regression tests** cover:
 
 - Input validation: integer days/people, budgets, group size, travel modes and real calendar dates.
 - Compatibility with the existing `AI_API_KEY`; diagnostics never contain credentials.
@@ -11,6 +11,7 @@
 - Group expense totals, duplicate hotel activity charges, final-night exclusion and truthful budget overruns.
 - OpenRouter credit/auth/network failures, safe errors, persistent daily request ceilings and Thai-date reset.
 - Brave failure handling, current query year, `search_lang=th`, supported `country=ALL` and source deduplication.
+- Destination relevance filtering: unrelated province sources are excluded, including from saved/imported plans, and removed source references cannot be shown as supporting evidence.
 - Imported/legacy plans, unsafe URLs, HTML escaping, export text and calendar boundaries.
 - Service-worker subdirectory paths, shell/icon precache, preservation of unrelated caches and offline app fallback.
 
@@ -33,8 +34,9 @@ Build checks validate JavaScript/GAS syntax, JSON manifests, PWA icon dimensions
 - The daily PNG downloaded successfully and was visually inspected: Thai text wraps correctly, all selected-day activities appear, and the image uses the dark theme.
 - With network connectivity disabled in the browser, the app reloaded from its service worker and reopened the complete saved 5-day plan. The checked packing item remained checked. Network emulation was restored afterward.
 - Print-media inspection confirms all **5 day panels** are displayed, including panels hidden during normal tab navigation. Printing uses a light palette. Automatic PDF extraction through the in-app browser CDP timed out; a physical browser print/save dialog was not tested.
-- GitHub Actions successfully built the source, ran all 26 regression tests, checked manifests/icons/secrets and verified generated-file consistency on the published branch.
-- The release uses the existing GAS deployment URL, version **119**, with the original access settings and Script Properties retained.
+- GitHub Actions successfully built the source, ran all 28 regression tests, checked manifests/icons/secrets and verified generated-file consistency on the published branch.
+- A final GitHub Pages smoke test generated a real 1-day Bangkok–Kanchanaburi return trip for 2 adults: **฿2,370** overall, including **฿1,450** of itemized transport, with no extra lodging night. Unrelated Chiang Mai search results were identified; the follow-up filters those sources instead of presenting them as evidence for another destination.
+- The release uses the existing GAS deployment URL, version **120**, with the original access settings and Script Properties retained.
 
 ## Release
 
