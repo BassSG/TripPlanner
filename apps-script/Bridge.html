@@ -1,0 +1,19 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8"><title>TripPlanner connection</title></head><body>
+<script>
+'use strict';
+const connection = <?!= connection ?>;
+const channel = 'tripplanner-rpc-v1';
+const permitted = new Set(['getAppStatus', 'prepareTrip', 'generateTripDays', 'completeTrip']);
+function send(message) {window.top.postMessage(Object.assign({channel:channel,nonce:connection.nonce},message), connection.origin);}
+window.addEventListener('message', function(event) {
+  const message = event.data;
+  if (event.source !== window.top || event.origin !== connection.origin || !message || message.channel !== channel || message.nonce !== connection.nonce || !permitted.has(message.method) || !/^[a-zA-Z0-9_-]{1,80}$/.test(message.id || '') || !Array.isArray(message.args) || message.args.length > 2) return;
+  const runner = google.script.run.withSuccessHandler(function(result) {send({id:message.id,result:result});})
+    .withFailureHandler(function() {send({id:message.id,error:'เชื่อมต่อ GAS ไม่สำเร็จ กรุณาลองใหม่'});});
+  if (message.method === 'getAppStatus') runner.getAppStatus();
+  if (message.method === 'prepareTrip') runner.prepareTrip(message.args[0]);
+  if (message.method === 'generateTripDays') runner.generateTripDays(message.args[0],message.args[1]);
+  if (message.method === 'completeTrip') runner.completeTrip(message.args[0]);
+});
+send({ready:true});
+</script></body></html>

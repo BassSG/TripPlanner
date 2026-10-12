@@ -1,80 +1,26 @@
-const CACHE_NAME = 'trip-planner-cache-v1';
-const urlsToCache = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  'https://s21-kling.klingai.com/bs2/upload-ylab-stunt-sgp/se/ai_portal_sgp_mmu_txt2img_aiweb_v15/53e5aa90-d7b3-457c-8217-5266265c1a5a_image.png?x-kcdn-pid=112372'
-];
-
-
-self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => {
-        console.log('Opened cache');
-        return cache.addAll(urlsToCache);
-      })
-  );
+'use strict';
+const VERSION='93f8f0ac7195';
+const CACHE='tripplanner-v8-'+VERSION;
+const CORE=['./','./index.html','./offline.html','./manifest.json','./assets/icon.svg','./assets/icon-192.png','./assets/icon-512.png','./assets/chiang-mai.jpg',
+  './src/styles.css?v='+VERSION,'./src/theme.css?v='+VERSION,'./app-config.js?v='+VERSION,'./src/model.js?v='+VERSION,'./src/app.js?v='+VERSION];
+const localUrl=relative=>new URL(relative,self.registration.scope).href;
+const assetPaths=new Set(CORE.map(relative=>new URL(localUrl(relative)).pathname));
+self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(CORE.map(localUrl))));});
+self.addEventListener('activate',event=>{
+  event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE&&(key.startsWith('tripplanner-v8-')||key.startsWith('trip-planner-cache-'))).map(key=>caches.delete(key)))).then(()=>self.clients.claim()));
 });
-
-
-self.addEventListener('fetch', event => {
-
-  
-
-  if (event.request.url.includes('script.google.com')) {
-    event.respondWith(
-      fetch(event.request)
-        .catch(() => {
-
-          return caches.match('/offline.html');
-        })
-    );
-  } else {
-    event.respondWith(
-      caches.match(event.request)
-        .then(response => {
-          // ส่งคืนจาก cache ถ้ามี
-          if (response) {
-            return response;
-          }
-          
-
-          return fetch(event.request)
-            .then(response => {
-
-              if (!response || response.status !== 200 || response.type !== 'basic') {
-                return response;
-              }
-              
-
-              const responseToCache = response.clone();
-              
-              caches.open(CACHE_NAME)
-                .then(cache => {
-                  cache.put(event.request, responseToCache);
-                });
-                
-              return response;
-            });
-        })
-    );
+self.addEventListener('message',event=>{if(event.data?.type==='SKIP_WAITING')self.skipWaiting();});
+self.addEventListener('fetch',event=>{
+  const request=event.request,url=new URL(request.url);
+  if(request.method!=='GET'||url.origin!==self.location.origin)return;
+  if(request.mode==='navigate'){
+    event.respondWith((async()=>{
+      const cache=await caches.open(CACHE);const controller=new AbortController();const timeout=setTimeout(()=>controller.abort(),6000);
+      try{const response=await fetch(request,{signal:controller.signal});if(response.ok&&(url.pathname===new URL(self.registration.scope).pathname||url.pathname.endsWith('/index.html'))){await cache.put(localUrl('./index.html'),response.clone());}return response;}
+      catch{return await cache.match(localUrl('./index.html'))||await cache.match(localUrl('./offline.html'))||new Response('TripPlanner: โปรดเชื่อมต่ออินเทอร์เน็ตอีกครั้ง',{status:503,headers:{'Content-Type':'text/plain; charset=utf-8'}});}
+      finally{clearTimeout(timeout);}
+    })());return;
   }
-});
-
-
-self.addEventListener('activate', event => {
-  const cacheWhitelist = [CACHE_NAME];
-  
-  event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.map(cacheName => {
-          if (cacheWhitelist.indexOf(cacheName) === -1) {
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    })
-  );
+  if(!assetPaths.has(url.pathname))return;
+  event.respondWith((async()=>{const cache=await caches.open(CACHE);const cached=await cache.match(request);if(cached)return cached;const response=await fetch(request);if(response.ok&&response.type==='basic')await cache.put(request,response.clone());return response;})());
 });
