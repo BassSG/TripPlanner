@@ -214,7 +214,7 @@
       }
       step('stepPlan','done');step('stepFinish','current');$('loadingDetail').textContent='กำลังรวมแผนและคำนวณค่าใช้จ่ายทั้งกลุ่ม';
       const result=checkedResult(await rpc('completeTrip',[prepared.ticket]));if(generation!==state.generation)return;
-      state.plan=M.normalizePlan(result.plan);state.activeDay=0;state.resume=null;step('stepFinish','done');renderPlan();savePlan(state.plan);screen('resultScreen');$('resultTitle').focus();notice('แผนทริปพร้อมแล้ว ตรวจรายละเอียดก่อนเดินทางได้เลย');
+      state.plan=M.normalizePlan(result.plan);state.activeDay=0;state.resume=null;step('stepFinish','done');renderPlan();savePlan(state.plan);screen('resultScreen');$('resultTitle').focus();$('resultScreen').scrollIntoView({block:'start',behavior:'auto'});notice('แผนทริปพร้อมแล้ว ตรวจรายละเอียดก่อนเดินทางได้เลย');
     }catch(error){if(generation!==state.generation)return;if(error.code==='EXPIRED'||error.code==='INVALID_CHUNK')state.resume=null;screen('formScreen');$('formError').textContent=error.message;$('formError').hidden=false;$('formError').scrollIntoView({block:'center',behavior:'smooth'});}
     finally{if(generation===state.generation){state.busy=false;clearInterval(elapsedTimer);$('generateBtn').disabled=false;$('generateLabel').textContent=state.resume?'ลองสร้างแผนต่อ':'สร้างแผนทริปของฉัน';}}
   }
@@ -224,22 +224,38 @@
 
   function renderPlan() {
     const p=state.plan;if(!p)return;$('resultTitle').textContent=p.tripTitle;$('resultSummary').textContent=p.summary;
+    $('resultOrigin').textContent=p.origin;$('resultDestination').textContent=p.destination;
+    const dateRange=p.startDate?M.dateForDay(p.startDate,0)+(p.days.length>1?' – '+M.dateForDay(p.startDate,p.days.length-1):''):'เลือกวันเดินทางภายหลังได้';
+    $('resultHeroMeta').innerHTML='<span>'+icon('calendar')+esc(p.days.length+' วัน · '+dateRange)+'</span><span>'+icon('users')+esc(p.totalTravelers+' คน')+'</span>';
+    const expense=p.totalExpense,used=p.totalBudget>0?Math.round(expense.total/p.totalBudget*100):100;
+    $('resultHeroEstimate').textContent='฿'+M.fmt(expense.total);
+    $('resultHeroBudgetLine').textContent='จากงบที่ตั้งไว้ ฿'+M.fmt(p.totalBudget);
+    $('resultHeroMeter').setAttribute('aria-valuenow',String(Math.min(100,Math.max(0,used))));
+    $('resultHeroMeter').setAttribute('aria-valuetext',used+'% ของงบที่ตั้งไว้');
+    $('resultHeroMeterFill').style.width=Math.min(100,Math.max(0,used))+'%';
+    $('resultHeroBalance').textContent=(expense.remaining<0?'เกินงบ ':'เหลืองบ ' )+'฿'+M.fmt(Math.abs(expense.remaining));
+    $('resultHeroBalance').classList.toggle('over',expense.remaining<0);
     $('planWarnings').innerHTML=p.warnings.map(w=>'<div class="notice">'+esc(w)+'</div>').join('');
-    const items=[['calendar',p.days.length+' วัน',p.startDate?M.dateForDay(p.startDate,0)+' – '+M.dateForDay(p.startDate,p.days.length-1):'เลือกวันเดินทางได้ทีหลัง'],['users',p.totalTravelers+' คน','งบทุกยอดสำหรับทั้งกลุ่ม'],['wallet','฿'+M.fmt(p.totalBudget),'งบที่คุณตั้งไว้'],['sparkles','฿'+M.fmt(p.totalExpense.total),'ค่าใช้จ่ายประมาณการ']];
-    $('tripStats').innerHTML=items.map((item,i)=>'<div class="stat"><span class="stat-icon '+(i===3?'gold':'')+'">'+icon(item[0])+'</span><div><span class="stat-label">'+['ระยะเวลา','ผู้ร่วมเดินทาง','งบรวม','รวมประมาณการ'][i]+'</span><strong>'+esc(item[1])+'</strong><small>'+esc(item[2])+'</small></div></div>').join('');
+    const stops=p.days.reduce((count,day)=>count+day.activities.length,0);
+    const items=[['calendar','ระยะเวลา',p.days.length+' วัน',dateRange],['users','ผู้ร่วมเดินทาง',p.totalTravelers+' คน','ค่าใช้จ่ายคิดรวมทั้งกลุ่ม'],['pin','จุดแวะในแผน',stops+' แห่ง','จัดลำดับเส้นทางตามวัน']];
+    $('tripStats').innerHTML=items.map(item=>'<div class="stat"><span class="stat-icon">'+icon(item[0])+'</span><div><span class="stat-label">'+esc(item[1])+'</span><strong>'+esc(item[2])+'</strong><small>'+esc(item[3])+'</small></div></div>').join('');
     $('dayTabs').innerHTML=p.days.map((day,i)=>'<button class="day-tab" id="dayTab-'+i+'" role="tab" aria-controls="dayPanel-'+i+'" aria-selected="'+(i===state.activeDay)+'" tabindex="'+(i===state.activeDay?'0':'-1')+'" data-day="'+i+'">วันที่ '+day.dayNumber+(p.startDate?'<small>'+esc(M.dateForDay(p.startDate,i))+'</small>':'')+'</button>').join('');
     $('dayPanels').innerHTML=p.days.map((day,i)=>renderDay(day,i)).join('');renderBudget();renderPacking();renderNotes();renderSources();
     const saved=state.saved.some(v=>v.id===p.id);$('savedState').innerHTML=icon(saved?'check':'info')+esc(saved?'บันทึกในอุปกรณ์นี้แล้ว':'พร้อมส่งออกหรือบันทึกแผน');
   }
   function renderDay(day,index) {
-    const activities=day.activities.map(a=>'<article class="activity-card"><div class="activity-time">'+esc(a.time)+'<small>'+esc(a.endTime)+'</small></div><div class="activity-body"><div class="activity-top"><span class="category-tag '+a.category+'">'+icon(a.category)+esc(M.categories[a.category])+'</span><span class="cost-tag">'+(a.cost===0?'ไม่มีค่าใช้จ่ายเพิ่ม':'฿'+M.fmt(a.cost))+'</span></div><h3>'+esc(a.title)+'</h3><p>'+esc(a.description)+'</p><div class="activity-meta"><a href="'+esc(M.mapUrl(a.mapQuery))+'" target="_blank" rel="noopener noreferrer">'+icon('pin')+esc(a.location)+' ↗</a><span>'+esc(a.costNote||'ยอดประมาณการทั้งกลุ่ม')+'</span></div>'+(a.tips?'<div class="activity-tip">'+icon('info')+esc(a.tips)+'</div>':'')+(a.sourceIds.length?'<div class="source-ref">ข้อมูลประกอบ: '+a.sourceIds.map(s=>'<a href="#source-'+esc(s)+'">'+esc(s)+'</a>').join(' · ')+'</div>':'')+'</div></article>').join('');
+    const activities=day.activities.map((a,stop)=>'<article class="activity-card"><div class="activity-time"><span class="activity-stop">'+String(stop+1).padStart(2,'0')+'</span><strong>'+esc(a.time)+'</strong><small>'+esc(a.endTime)+'</small></div><div class="activity-body"><div class="activity-top"><span class="category-tag '+a.category+'">'+icon(a.category)+esc(M.categories[a.category])+'</span><span class="cost-tag">'+(a.cost===0?'ไม่มีค่าใช้จ่ายเพิ่ม':'฿'+M.fmt(a.cost))+'</span></div><h3>'+esc(a.title)+'</h3><p>'+esc(a.description)+'</p><div class="activity-meta"><a href="'+esc(M.mapUrl(a.mapQuery))+'" target="_blank" rel="noopener noreferrer">'+icon('pin')+esc(a.location)+' ↗</a><span>'+esc(a.costNote||'ยอดประมาณการทั้งกลุ่ม')+'</span></div>'+(a.tips?'<div class="activity-tip">'+icon('info')+esc(a.tips)+'</div>':'')+(a.sourceIds.length?'<div class="source-ref">ข้อมูลประกอบ: '+a.sourceIds.map(s=>'<a href="#source-'+esc(s)+'">'+esc(s)+'</a>').join(' · ')+'</div>':'')+'</div></article>').join('');
     const a=day.accommodation;const stay=a?'<div class="hotel-card">'+icon('hotel')+'<div><span class="eyebrow muted">STAY FOR THE NIGHT</span><h3>'+esc(a.name)+'</h3><p>'+esc(a.highlights)+'</p><a href="'+esc(M.mapUrl(a.mapQuery))+'" target="_blank" rel="noopener noreferrer">ดูที่พักใน Google Maps ↗</a></div><span class="hotel-cost"><strong>฿'+M.fmt(a.pricePerNight)+'</strong>/ คืน ทั้งกลุ่ม</span></div>':'';
-    return '<section class="day-panel" id="dayPanel-'+index+'" role="tabpanel" aria-labelledby="dayTab-'+index+'" '+(index!==state.activeDay?'hidden':'')+'><div class="day-heading"><div><h2>'+esc(day.title||'วันที่ '+day.dayNumber)+'</h2><p>'+esc(day.theme)+'</p></div><div class="daily-total">รวมวันนี้ทั้งกลุ่ม<strong>฿'+M.fmt(day.dailyExpense.total)+'</strong></div></div><div class="timeline">'+activities+'</div>'+stay+'</section>';
+    const first=day.activities[0],last=day.activities[day.activities.length-1];
+    const timeRange=first&&last?first.time+' – '+last.endTime:'';
+    const dayMeta=day.activities.length+' จุดแวะ'+(timeRange?' · '+timeRange:'');
+    return '<section class="day-panel" id="dayPanel-'+index+'" role="tabpanel" aria-labelledby="dayTab-'+index+'" '+(index!==state.activeDay?'hidden':'')+'><div class="day-heading"><div class="day-heading-copy"><span class="day-kicker">วันที่ '+String(day.dayNumber).padStart(2,'0')+' / '+state.plan.days.length+(state.plan.startDate?' · '+esc(M.dateForDay(state.plan.startDate,index)):'')+'</span><h2>'+esc(day.title||'วันที่ '+day.dayNumber)+'</h2><p>'+esc(day.theme)+'</p><span class="day-activity-count">'+icon('route')+esc(dayMeta)+'</span></div><div class="daily-total">ประมาณการวันนี้<strong>฿'+M.fmt(day.dailyExpense.total)+'</strong><small>ทั้งกลุ่ม</small></div></div><div class="timeline">'+activities+'</div>'+stay+'</section>';
   }
   function setDay(index,focus=false) {
     if(!state.plan||index<0||index>=state.plan.days.length)return;state.activeDay=index;
     document.querySelectorAll('[data-day]').forEach((button,i)=>{button.setAttribute('aria-selected',String(i===index));button.tabIndex=i===index?0:-1;});
     document.querySelectorAll('.day-panel').forEach((panel,i)=>{panel.hidden=i!==index;});if(focus)$('dayTab-'+index).focus();
+    $('dayNavigation').scrollIntoView({block:'start',behavior:'auto'});
   }
   function renderBudget() {
     const p=state.plan,e=p.totalExpense;const used=p.totalBudget>0?Math.min(100,Math.round(e.total/p.totalBudget*100)):100;
@@ -263,7 +279,7 @@
     if(state.storageRaw){const button=document.createElement('button');button.className='text-button';button.textContent='ดาวน์โหลดข้อมูลเดิม';button.dataset.action='recover-storage';$('storageNotice').append(button);}
     $('savedList').innerHTML=plans.length?plans.map(p=>'<article class="panel saved-card"><span class="saved-destination">'+icon('pin')+esc(p.destination)+'</span><button class="icon-button" data-delete="'+esc(p.id)+'" aria-label="ลบทริป '+esc(p.tripTitle)+'">'+icon('trash')+'</button><h3>'+esc(p.tripTitle)+'</h3><p>'+esc(p.summary.slice(0,120))+'</p><span class="saved-date">'+esc(new Date(p.createdAt).toLocaleDateString('th-TH'))+'</span><div class="saved-card-meta"><span>'+p.days.length+' วัน</span><span>'+p.totalTravelers+' คน</span><span>งบ ฿'+M.fmt(p.totalBudget)+'</span></div><button class="button secondary" data-open="'+esc(p.id)+'">เปิดแผนทริป '+icon('arrow-right')+'</button></article>').join(''):'<div class="empty-state">'+icon('bookmark')+'<h3>'+(term?'ยังไม่พบทริปที่ค้นหา':'เก็บทริปแรกของคุณไว้ที่นี่')+'</h3><p>'+(term?'ลองค้นชื่อทริปหรือจุดหมายอื่น':'สร้างแผนใหม่แล้วเราจะบันทึกให้อัตโนมัติ<br>หรือเพิ่มแผนจากไฟล์ JSON ที่เคยส่งออก')+'</p><button class="button primary" data-view="planner">วางแผนทริป '+icon('arrow-right')+'</button><button class="button ghost" data-action="import">นำเข้าแผน</button></div>';
   }
-  function openSaved(id) {if(state.busy){notice('กำลังสร้างแผนใหม่ กรุณารอหรือหยุดสร้างวันถัดไปก่อน');return;}const p=state.saved.find(v=>v.id===id);if(!p)return;state.plan=p;state.activeDay=0;renderPlan();screen('resultScreen');setView('planner');$('resultTitle').focus();}
+  function openSaved(id) {if(state.busy){notice('กำลังสร้างแผนใหม่ กรุณารอหรือหยุดสร้างวันถัดไปก่อน');return;}const p=state.saved.find(v=>v.id===id);if(!p)return;state.plan=p;state.activeDay=0;renderPlan();screen('resultScreen');setView('planner');$('resultTitle').focus();$('resultScreen').scrollIntoView({block:'start',behavior:'auto'});}
 
   function dialog(title,html) {$('dialogTitle').textContent=title;$('dialogBody').innerHTML=html;if(!$('appDialog').open)$('appDialog').showModal();}
   function closeDialog() {$('appDialog').close();if(state.imageUrl){URL.revokeObjectURL(state.imageUrl);state.imageUrl='';}}
@@ -378,7 +394,7 @@
   }
   document.addEventListener('click',event=>{
     const target=event.target.closest('button,a');if(!target)return;
-    if(target.dataset.action){event.preventDefault();handleAction(target.dataset.action).catch(error=>notice(error.message,true));}
+    if(target.dataset.action){event.preventDefault();if(target.closest('.result-export'))target.closest('.result-export').open=false;handleAction(target.dataset.action).catch(error=>notice(error.message,true));}
     if(target.dataset.view){event.preventDefault();setView(target.dataset.view);}
     if(target.dataset.destination){$('destination').value=target.dataset.destination;updatePreview();saveDraft();$('destination').focus();}
     if(target.dataset.interest){const value=target.dataset.interest;if(state.interests.has(value))state.interests.delete(value);else state.interests.add(value);target.setAttribute('aria-pressed',String(state.interests.has(value)));saveDraft();}
