@@ -27,7 +27,7 @@ function setup(options={}) {
   return {ctx,props,cache,calls,logs,response};
 }
 test('legacy AI_API_KEY still works, diagnostics never expose credentials',()=>{
-  const {ctx}=setup();const status=ctx.getAppStatus();assert.equal(status.aiConfigured,true);assert.equal(status.searchConfigured,false);assert.ok(!JSON.stringify(status).includes('test-only-key'));assert.equal(status.version,'8.0.0');
+  const {ctx}=setup();const status=ctx.getAppStatus();assert.equal(status.aiConfigured,true);assert.equal(status.searchConfigured,false);assert.ok(!JSON.stringify(status).includes('test-only-key'));assert.equal(status.version,'8.1.0');
 });
 test('reject fractional, infinite, negative and excessive input before charging API',()=>{
   const {ctx,calls}=setup();for(const values of [{days:2.5},{days:31},{people:-2},{children:-1},{budget:Infinity},{people:49,children:2},{startDate:'2026-02-30'},{travelMode:'<script>'}]){const result=ctx.prepareTrip({...input,...values});assert.equal(result.success,false);assert.equal(result.code,'VALIDATION');}assert.equal(calls.length,0);

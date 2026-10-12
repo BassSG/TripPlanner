@@ -226,7 +226,7 @@
     const p=state.plan;if(!p)return;$('resultTitle').textContent=p.tripTitle;$('resultSummary').textContent=p.summary;
     $('planWarnings').innerHTML=p.warnings.map(w=>'<div class="notice">'+esc(w)+'</div>').join('');
     const items=[['calendar',p.days.length+' วัน',p.startDate?M.dateForDay(p.startDate,0)+' – '+M.dateForDay(p.startDate,p.days.length-1):'เลือกวันเดินทางได้ทีหลัง'],['users',p.totalTravelers+' คน','งบทุกยอดสำหรับทั้งกลุ่ม'],['wallet','฿'+M.fmt(p.totalBudget),'งบที่คุณตั้งไว้'],['sparkles','฿'+M.fmt(p.totalExpense.total),'ค่าใช้จ่ายประมาณการ']];
-    $('tripStats').innerHTML=items.map((item,i)=>'<div class="stat"><span class="stat-icon '+(i===3?'orange':'')+'">'+icon(item[0])+'</span><div><span class="stat-label">'+['ระยะเวลา','ผู้ร่วมเดินทาง','งบรวม','รวมประมาณการ'][i]+'</span><strong>'+esc(item[1])+'</strong><small>'+esc(item[2])+'</small></div></div>').join('');
+    $('tripStats').innerHTML=items.map((item,i)=>'<div class="stat"><span class="stat-icon '+(i===3?'gold':'')+'">'+icon(item[0])+'</span><div><span class="stat-label">'+['ระยะเวลา','ผู้ร่วมเดินทาง','งบรวม','รวมประมาณการ'][i]+'</span><strong>'+esc(item[1])+'</strong><small>'+esc(item[2])+'</small></div></div>').join('');
     $('dayTabs').innerHTML=p.days.map((day,i)=>'<button class="day-tab" id="dayTab-'+i+'" role="tab" aria-controls="dayPanel-'+i+'" aria-selected="'+(i===state.activeDay)+'" tabindex="'+(i===state.activeDay?'0':'-1')+'" data-day="'+i+'">วันที่ '+day.dayNumber+(p.startDate?'<small>'+esc(M.dateForDay(p.startDate,i))+'</small>':'')+'</button>').join('');
     $('dayPanels').innerHTML=p.days.map((day,i)=>renderDay(day,i)).join('');renderBudget();renderPacking();renderNotes();renderSources();
     const saved=state.saved.some(v=>v.id===p.id);$('savedState').innerHTML=icon(saved?'check':'info')+esc(saved?'บันทึกในอุปกรณ์นี้แล้ว':'พร้อมส่งออกหรือบันทึกแผน');
@@ -322,7 +322,7 @@
   }
   async function copyPlan(text=M.planText(state.plan)) {
     try{await navigator.clipboard.writeText(text);notice('คัดลอกแผนพร้อมลิงก์ Maps แล้ว');}
-    catch{dialog('คัดลอกแผนของคุณ','<p>เบราว์เซอร์นี้ไม่อนุญาตการคัดลอกอัตโนมัติ แตะช่องด้านล่าง เลือกทั้งหมด แล้วคัดลอก</p><textarea id="copyText" readonly rows="12" class="copy-text"></textarea>');$('copyText').value=text;$('copyText').style.cssText='width:100%;border:1px solid #e5e9e2;border-radius:10px;padding:14px;font-size:12px;line-height:1.8';$('copyText').focus();$('copyText').select();}
+    catch{dialog('คัดลอกแผนของคุณ','<p>เบราว์เซอร์นี้ไม่อนุญาตการคัดลอกอัตโนมัติ แตะช่องด้านล่าง เลือกทั้งหมด แล้วคัดลอก</p><textarea id="copyText" readonly rows="12" class="copy-text"></textarea>');$('copyText').value=text;$('copyText').style.cssText='width:100%;border:1px solid var(--line);border-radius:10px;padding:14px;font-size:12px;line-height:1.8';$('copyText').focus();$('copyText').select();}
   }
   async function sharePlan() {if(!state.plan)return;const text=M.planText(state.plan);if(navigator.share){try{await navigator.share({title:state.plan.tripTitle,text});return;}catch(error){if(error.name==='AbortError')return;}}await copyPlan(text);}
 
@@ -332,7 +332,7 @@
       if(document.fonts)await document.fonts.ready;
       const canvas=document.createElement('canvas');canvas.width=1080;canvas.height=14000;let ctx=canvas.getContext('2d');
       if(!ctx)throw new Error('เบราว์เซอร์ไม่รองรับการส่งออกภาพ');
-      const records=[];let y=70;
+      const records=[];let y=180;
       const font='"Noto Sans Thai", sans-serif';
       function text(value,size,color,bold=false,gap=12) {
         ctx.font=(bold?'600 ':'400 ')+size+'px '+font;let line='';
@@ -340,16 +340,18 @@
         words.forEach(word=>{if(ctx.measureText(line+word).width>928&&line){records.push({text:line,y,size,color,bold});y+=size*1.65;line=word;}else line+=word;});
         if(line){records.push({text:line,y,size,color,bold});y+=size*1.65;}y+=gap;
       }
-      text('TRIPPLANNER  /  MAKE EVERY TRIP YOURS',18,'#de966c',true,20);
-      text(plan.tripTitle,40,'#dbe5d9',true,8);
-      text('วันที่ '+day.dayNumber+' · '+day.title+(plan.startDate?' · '+M.dateForDay(plan.startDate,state.activeDay):''),26,'#b1c8a4',true,10);
-      text(plan.totalTravelers+' คน · รวมวันนี้ ฿'+M.fmt(day.dailyExpense.total)+' (ประมาณการทั้งกลุ่ม)',22,'#9dac9e',false,28);
-      day.activities.forEach(a=>{text(a.time+'–'+a.endTime+'  '+a.title,27,'#dbe5d9',true,4);text(a.description,22,'#abb7a6',false,5);text(a.location+' · ฿'+M.fmt(a.cost)+' '+(a.costNote||''),20,'#b1c8a4',false,5);if(a.tips)text('เคล็ดลับ: '+a.tips,19,'#c1c09a',false,7);y+=24;});
-      if(day.accommodation){text('คืนนี้: '+day.accommodation.name,26,'#dbe5d9',true,6);text('฿'+M.fmt(day.accommodation.pricePerNight)+' / คืน สำหรับทั้งกลุ่ม',22,'#b1c8a4',false,20);}
-      text('ค่าใช้จ่ายเป็นประมาณการ ควรตรวจราคา เวลาเปิด และเส้นทางก่อนเดินทาง',18,'#9dac9e',false,10);y+=50;
+      text('MAKE EVERY TRIP YOURS',16,'#cfb884',true,20);
+      text(plan.tripTitle,40,'#dce5f0',true,8);
+      text('วันที่ '+day.dayNumber+' · '+day.title+(plan.startDate?' · '+M.dateForDay(plan.startDate,state.activeDay):''),26,'#adcae5',true,10);
+      text(plan.totalTravelers+' คน · รวมวันนี้ ฿'+M.fmt(day.dailyExpense.total)+' (ประมาณการทั้งกลุ่ม)',22,'#91a3b9',false,28);
+      day.activities.forEach(a=>{text(a.time+'–'+a.endTime+'  '+a.title,27,'#dce5f0',true,4);text(a.description,22,'#a8bacf',false,5);text(a.location+' · ฿'+M.fmt(a.cost)+' '+(a.costNote||''),20,'#adcae5',false,5);if(a.tips)text('เคล็ดลับ: '+a.tips,19,'#c9bd9e',false,7);y+=24;});
+      if(day.accommodation){text('คืนนี้: '+day.accommodation.name,26,'#dce5f0',true,6);text('฿'+M.fmt(day.accommodation.pricePerNight)+' / คืน สำหรับทั้งกลุ่ม',22,'#adcae5',false,20);}
+      text('ค่าใช้จ่ายเป็นประมาณการ ควรตรวจราคา เวลาเปิด และเส้นทางก่อนเดินทาง',18,'#91a3b9',false,10);y+=50;
       if(y>14000)throw new Error('รายละเอียดวันนี้ยาวเกินขนาดภาพ กรุณาส่งออก PDF หรือ JSON');
-      canvas.height=Math.ceil(y);ctx=canvas.getContext('2d');ctx.fillStyle='#101916';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.fillStyle='#de966c';ctx.fillRect(0,0,canvas.width,10);
+      canvas.height=Math.ceil(y);ctx=canvas.getContext('2d');ctx.fillStyle='#0c121c';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.fillStyle='#cfb884';ctx.fillRect(0,0,canvas.width,10);
       records.forEach(r=>{ctx.font=(r.bold?'600 ':'400 ')+r.size+'px '+font;ctx.fillStyle=r.color;ctx.fillText(r.text,76,r.y);});
+      const wordmark=document.querySelector('.brand-wordmark svg');
+      if(wordmark){const image=new Image();await new Promise((resolve,reject)=>{image.onload=resolve;image.onerror=()=>reject(new Error('โหลดโลโก้สำหรับภาพไม่สำเร็จ'));image.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(new XMLSerializer().serializeToString(wordmark));});ctx.drawImage(image,64,40,350,350*64/Number(wordmark.getAttribute('viewBox').split(' ')[2]));}
       const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));if(!blob)throw new Error('สร้างไฟล์ภาพไม่สำเร็จ');
       state.imageUrl=URL.createObjectURL(blob);
       $('dialogBody').innerHTML='<p>ภาพนี้รวมกิจกรรมและที่พักของวันที่ '+day.dayNumber+' พร้อมยอดประมาณการทั้งกลุ่ม</p><img class="dialog-image" alt="แผนรายวันของ '+esc(plan.destination)+'" src="'+state.imageUrl+'"><a class="button primary" href="'+state.imageUrl+'" download="TripPlanner-day-'+day.dayNumber+'.png">'+icon('download')+'ดาวน์โหลดภาพ</a>';

@@ -13,6 +13,8 @@ for(const icon of manifest.icons){await access(path.join(root,icon.src));const b
 const files=execFileSync('git',['ls-files','--cached','--others','--exclude-standard'],{cwd:root,encoding:'utf8'}).trim().split(/\r?\n/).filter(f=>/\.(js|gs|html|md|json|css|mjs|yml)$/.test(f));
 for(const file of files){const text=await readFile(path.join(root,file),'utf8');if(/AIza[A-Za-z0-9_-]{25,}|sk-or-v1-[A-Za-z0-9]{32,}|gh[pousr]_[A-Za-z0-9]{32,}/.test(text))throw new Error('Possible secret detected in '+file);}
 const html=await readFile(path.join(root,'index.html'),'utf8');const ids=[...html.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);if(new Set(ids).size!==ids.length)throw new Error('Duplicate HTML id');
-if(html.includes('APP_SCRIPTS')||html.includes('APP_STYLES'))throw new Error('Build output missing');
+if(/APP_SCRIPTS|APP_STYLES|BRAND_MARK|BRAND_WORDMARK/.test(html))throw new Error('Build output missing');
+for(const size of [16,32,48,180,192,512,1024]){const bytes=await readFile(path.join(root,'assets/icon-'+size+'.png'));if(bytes.readUInt32BE(16)!==size||bytes.readUInt32BE(20)!==size)throw new Error('Incorrect brand icon dimensions: '+size);}
+for(const variant of ['dark','light']){const svg=await readFile(path.join(root,'assets/logo-wordmark-'+variant+'.svg'),'utf8');if(/<text\b/.test(svg))throw new Error('Wordmark must use portable outlines');}
 const sw=await readFile(path.join(root,'service-worker.js'),'utf8');if(sw.includes('__CACHE_VERSION__'))throw new Error('Worker version missing');
 console.log('Syntax, manifests, icons, build output, unique IDs and secret scan passed ('+files.length+' text files).');

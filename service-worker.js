@@ -1,7 +1,7 @@
 'use strict';
-const VERSION='1e7c6d09efa5';
+const VERSION='7e06950fd12b';
 const CACHE='tripplanner-v8-'+VERSION;
-const CORE=['./','./index.html','./offline.html','./manifest.json','./assets/icon.svg','./assets/icon-192.png','./assets/icon-512.png','./assets/chiang-mai.jpg',
+const CORE=['./','./index.html','./offline.html','./manifest.json','./assets/icon.svg','./assets/favicon.ico','./assets/icon-180.png','./assets/icon-192.png','./assets/icon-512.png','./assets/chiang-mai.jpg',
   './src/styles.css?v='+VERSION,'./src/theme.css?v='+VERSION,'./app-config.js?v='+VERSION,'./src/model.js?v='+VERSION,'./src/app.js?v='+VERSION];
 const localUrl=relative=>new URL(relative,self.registration.scope).href;
 const assetPaths=new Set(CORE.map(relative=>new URL(localUrl(relative)).pathname));

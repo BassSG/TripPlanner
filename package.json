@@ -1,6 +1,6 @@
 {
   "name": "tripplanner",
-  "version": "8.0.0",
+  "version": "8.1.0",
   "private": true,
   "description": "Thai travel planner on Google Apps Script and GitHub Pages",
   "scripts": {
