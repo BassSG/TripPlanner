@@ -1,5 +1,5 @@
 'use strict';
-const VERSION='3c279665bd8b';
+const VERSION='63c4ded04a0c';
 const CACHE='tripplanner-v8-'+VERSION;
 const CORE=['./','./index.html','./offline.html','./manifest.json','./assets/icon.svg?v='+VERSION,'./assets/favicon.ico?v='+VERSION,'./assets/icon-180.png?v='+VERSION,'./assets/icon-192.png','./assets/icon-512.png','./assets/chiang-mai.jpg',
   './src/styles.css?v='+VERSION,'./src/theme.css?v='+VERSION,'./app-config.js?v='+VERSION,'./src/model.js?v='+VERSION,'./src/app.js?v='+VERSION];

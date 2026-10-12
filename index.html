@@ -11,15 +11,15 @@
   <meta name="apple-mobile-web-app-title" content="TripPlanner">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>TripPlanner — วางแผนดี เที่ยวได้มากกว่า</title>
-  <link rel="icon" href="./assets/icon.svg?v=3c279665bd8b" type="image/svg+xml">
-  <link rel="icon" href="./assets/favicon.ico?v=3c279665bd8b" sizes="16x16 32x32 48x48">
-  <link rel="apple-touch-icon" href="./assets/icon-180.png?v=3c279665bd8b">
+  <link rel="icon" href="./assets/icon.svg?v=63c4ded04a0c" type="image/svg+xml">
+  <link rel="icon" href="./assets/favicon.ico?v=63c4ded04a0c" sizes="16x16 32x32 48x48">
+  <link rel="apple-touch-icon" href="./assets/icon-180.png?v=63c4ded04a0c">
   <link rel="manifest" href="./manifest.json">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Noto+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./src/styles.css?v=3c279665bd8b">
-  <link rel="stylesheet" href="./src/theme.css?v=3c279665bd8b">
+  <link rel="stylesheet" href="./src/styles.css?v=63c4ded04a0c">
+  <link rel="stylesheet" href="./src/theme.css?v=63c4ded04a0c">
 </head>
 <body>
   <a class="skip-link" href="#main">ข้ามไปเนื้อหา</a>
@@ -37,7 +37,7 @@
         <button class="nav-item" data-action="guide"><span data-icon="help"></span>ใช้งานอย่างไร</button>
       </nav>
       <div class="sidebar-note"><span data-icon="route"></span><p>วางแผนให้พอดีกับคุณ<small>จุดหมาย งบ และสไตล์ที่ชอบ<br>ที่เหลือให้เราช่วยคิด</small></p><div class="note-route" aria-hidden="true">· · · · · · · · ↗</div></div>
-      <div class="sidebar-bottom"><button class="nav-item" data-action="connection"><span data-icon="settings"></span>การเชื่อมต่อ & API</button><div class="sidebar-footer"><span class="status-dot" id="backendDot"></span><span id="backendLabel">กำลังเชื่อมต่อ</span><span class="version">v8.1</span></div></div>
+      <div class="sidebar-bottom"><button class="nav-item" data-action="connection"><span data-icon="settings"></span>การเชื่อมต่อ & API</button><div class="sidebar-footer"><span class="status-dot" id="backendDot"></span><span id="backendLabel">กำลังเชื่อมต่อ</span><span class="version">v8.2</span></div></div>
     </aside>
     <div class="workspace">
       <header class="topbar"><div class="breadcrumb"><span class="mobile-brand" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
@@ -74,7 +74,34 @@
   <path d="M29 35 L50 14 L35 50 Z" fill="#477ba8"/>
   <path d="M29 35 L50 14" stroke="#0d1625" stroke-width="1.4"/>
 </svg></span></div><div class="eyebrow muted">A LITTLE PLANNING. A LOT TO LOOK FORWARD TO.</div><h2>กำลังต่อเรื่องราวของทริปคุณ</h2><p id="loadingDestination"></p><div class="loading-steps"><div id="stepResearch" class="loading-step current"><span class="step-marker"></span><span>ค้นข้อมูลประกอบ</span></div><div id="stepPlan" class="loading-step"><span class="step-marker"></span><span>วางเส้นทางรายวัน</span></div><div id="stepFinish" class="loading-step"><span class="step-marker"></span><span>ตรวจและรวมค่าใช้จ่าย</span></div></div><p id="loadingDetail" class="loading-detail">กำลังค้นหาสถานที่และข้อมูลการเดินทาง</p><progress id="loadingProgress" max="30" value="0" aria-label="จำนวนวันที่สร้างเสร็จ"></progress><p class="small muted" id="loadingElapsed">เริ่มสร้างแผนแล้ว</p><button class="button ghost" data-action="stop">หยุดสร้างวันถัดไป</button></section>
-          <section id="resultScreen" hidden><div class="result-top"><div><div class="eyebrow muted">YOUR NEXT CHAPTER</div><h1 id="resultTitle" tabindex="-1"></h1><p id="resultSummary" class="muted"></p></div><button class="button secondary" data-action="edit"><span data-icon="edit"></span>ปรับรายละเอียด</button></div><div class="result-actions"><span class="saved-state" id="savedState"></span><div><button class="button small-button secondary" data-action="share"><span data-icon="share"></span>แชร์</button><button class="button small-button secondary" data-action="copy"><span data-icon="copy"></span>คัดลอก</button><button class="button small-button secondary" data-action="image"><span data-icon="image"></span>ภาพรายวัน</button><button class="button small-button secondary" data-action="print"><span data-icon="print"></span>พิมพ์ / PDF</button><button class="button small-button secondary" data-action="export"><span data-icon="download"></span>ไฟล์ JSON</button></div></div><div id="planWarnings"></div><div class="trip-stats" id="tripStats"></div><div class="results-grid"><div class="itinerary"><div class="day-tabs" role="tablist" aria-label="เลือกวันเดินทาง" id="dayTabs"></div><div id="dayPanels"></div><div id="travelNotes"></div></div><aside class="result-aside"><div class="panel budget-panel" id="budgetPanel"></div><div class="panel packing-panel" id="packingPanel"></div></aside></div><section class="panel sources-panel" id="sourcesPanel"></section></section>
+          <section id="resultScreen" hidden>
+            <header class="result-top result-hero">
+              <div class="result-hero-main">
+                <div class="result-kicker"><span data-icon="sparkles"></span> แผนทริปของคุณพร้อมแล้ว</div>
+                <div class="result-route" aria-label="เส้นทางการเดินทาง">
+                  <div class="result-route-end"><span>ออกเดินทางจาก</span><strong id="resultOrigin"></strong></div>
+                  <span class="result-route-track" aria-hidden="true"><span>↗</span></span>
+                  <div class="result-route-end result-route-arrival"><span>จุดหมายของทริป</span><strong id="resultDestination"></strong></div>
+                </div>
+                <h1 id="resultTitle" tabindex="-1"></h1>
+                <p id="resultSummary"></p>
+                <div class="result-hero-meta" id="resultHeroMeta"></div>
+              </div>
+              <div class="result-hero-side">
+                <span class="result-budget-label">ประมาณการทั้งทริป</span>
+                <strong class="result-hero-estimate" id="resultHeroEstimate"></strong>
+                <span class="result-budget-caption" id="resultHeroBudgetLine"></span>
+                <div class="result-budget-meter" id="resultHeroMeter" role="progressbar" aria-label="สัดส่วนงบประมาณที่ใช้" aria-valuemin="0" aria-valuemax="100"><span id="resultHeroMeterFill"></span></div>
+                <span class="result-hero-balance" id="resultHeroBalance"></span>
+                <a class="button primary result-view-plan" href="#dayNavigation">ดูแผนรายวัน <span data-icon="arrow-right"></span></a>
+              </div>
+            </header>
+            <div class="result-actions"><span class="saved-state" id="savedState"></span><div class="result-action-controls"><button class="button small-button secondary" data-action="edit"><span data-icon="edit"></span>แก้ไขแผน</button><button class="button small-button secondary" data-action="share"><span data-icon="share"></span>แชร์</button><details class="result-export"><summary class="button small-button secondary"><span data-icon="download"></span>บันทึก / ส่งออก <span class="export-chevron" aria-hidden="true">⌄</span></summary><div class="result-export-menu"><button data-action="copy"><span data-icon="copy"></span>คัดลอกข้อความ</button><button data-action="image"><span data-icon="image"></span>ภาพรายวัน</button><button data-action="print"><span data-icon="print"></span>พิมพ์ / PDF</button><button data-action="export"><span data-icon="download"></span>ไฟล์ JSON</button></div></details></div></div>
+            <div id="planWarnings"></div>
+            <div class="trip-stats" id="tripStats"></div>
+            <div class="results-grid"><div class="itinerary"><div class="day-navigation" id="dayNavigation"><div class="day-nav-intro"><span class="eyebrow">THE DAILY ROUTE</span><strong>แผนเที่ยวรายวัน</strong></div><div class="day-tabs" role="tablist" aria-label="เลือกวันเดินทาง" id="dayTabs"></div></div><div id="dayPanels"></div><div id="travelNotes"></div></div><aside class="result-aside"><div class="panel budget-panel" id="budgetPanel"></div><div class="panel packing-panel" id="packingPanel"></div></aside></div>
+            <section class="panel sources-panel" id="sourcesPanel"></section>
+          </section>
         </section>
         <section id="savedView" hidden><div class="section-heading saved-heading"><div><div class="eyebrow muted">PLANS WORTH KEEPING</div><h1>ทริปที่บันทึกไว้</h1><p class="muted">พร้อมเปิดอ่าน เมื่อคุณพร้อมออกเดินทาง</p></div><button class="button secondary" data-action="import"><span data-icon="upload"></span>นำเข้าแผน</button></div><label class="input-wrap saved-search"><span data-icon="search"></span><input id="savedSearch" type="search" placeholder="ค้นชื่อทริปหรือจุดหมาย" aria-label="ค้นแผนที่บันทึก"></label><p class="small muted">บันทึกเฉพาะในเบราว์เซอร์นี้ · ส่งออก JSON เพื่อสำรองหรือย้ายอุปกรณ์ <button class="text-button" data-action="recovery">กู้คืนทริป</button></p><div id="storageNotice" class="notice" hidden></div><div id="savedList" class="saved-grid"></div></section>
       </main>
@@ -86,8 +113,8 @@
   <input type="file" id="importFile" accept="application/json,.json" hidden>
   <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
   <noscript><div class="noscript">กรุณาเปิด JavaScript เพื่อสร้างและอ่านแผนการเดินทาง</div></noscript>
-  <script src="./app-config.js?v=3c279665bd8b" defer></script>
-  <script src="./src/model.js?v=3c279665bd8b" defer></script>
-  <script src="./src/app.js?v=3c279665bd8b" defer></script>
+  <script src="./app-config.js?v=63c4ded04a0c" defer></script>
+  <script src="./src/model.js?v=63c4ded04a0c" defer></script>
+  <script src="./src/app.js?v=63c4ded04a0c" defer></script>
 </body>
 </html>

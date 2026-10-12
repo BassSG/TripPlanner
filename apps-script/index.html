@@ -12,8 +12,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>TripPlanner — วางแผนดี เที่ยวได้มากกว่า</title>
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTQiIGZpbGw9IiMwZDE2MjUiLz48cGF0aCBkPSJNMTYgNDYgQzIzIDUxIDI1IDQzIDI5IDM1IiBzdHJva2U9IiNjZmI4ODQiIHN0cm9rZS13aWR0aD0iMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgPGNpcmNsZSBjeD0iMTYiIGN5PSI0NiIgcj0iMyIgZmlsbD0iI2NmYjg4NCIvPgogIDxwYXRoIGQ9Ik0xNCAyOCBMNTAgMTQgTDM1IDUwIEwyOSAzNSBaIiBmaWxsPSIjODRiOWUzIi8+CiAgPHBhdGggZD0iTTI5IDM1IEw1MCAxNCBMMzUgNTAgWiIgZmlsbD0iIzQ3N2JhOCIvPgogIDxwYXRoIGQ9Ik0yOSAzNSBMNTAgMTQiIHN0cm9rZT0iIzBkMTYyNSIgc3Ryb2tlLXdpZHRoPSIxLjQiLz48L3N2Zz4K" type="image/svg+xml">
-  <link rel="icon" href="https://basssg.github.io/TripPlanner/assets/favicon.ico?v=3c279665bd8b" sizes="16x16 32x32 48x48">
-  <link rel="apple-touch-icon" href="https://basssg.github.io/TripPlanner/assets/icon-180.png?v=3c279665bd8b">
+  <link rel="icon" href="https://basssg.github.io/TripPlanner/assets/favicon.ico?v=63c4ded04a0c" sizes="16x16 32x32 48x48">
+  <link rel="apple-touch-icon" href="https://basssg.github.io/TripPlanner/assets/icon-180.png?v=63c4ded04a0c">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -182,6 +182,181 @@
 @media screen { .sidebar-note { border-top:2px solid #cfb88466; } .loading-plane { color:var(--blue); } .loading-art .orbit-one { border-color:#cfb88455; } }
 @media screen and (max-width:760px) { .mobile-brand { display:inline-flex; margin-left:-4px; margin-right:-3px; } .mobile-brand svg { width:100%; height:100%; } .breadcrumb > span:not(.mobile-brand) { display:none; } }
 
+/* The finished trip is a reading experience: route first, budget second, then each day. */
+@media screen {
+  #resultScreen { scroll-margin-top: 12px; }
+  .result-top.result-hero {
+    position:relative; display:grid; grid-template-columns:minmax(0,1fr) minmax(250px,310px);
+    align-items:stretch; gap:28px; min-height:335px; margin:2px 0 16px; padding:30px;
+    overflow:hidden; border:1px solid #3c536d; border-top:2px solid #b9a378;
+    border-radius:22px; background:radial-gradient(circle at 80% -25%,#365776a1,transparent 43%),
+      radial-gradient(circle at 9% 120%,#27476580,transparent 49%),linear-gradient(135deg,#192b42,#101b2b 75%);
+    box-shadow:0 16px 42px #03081040;
+  }
+  .result-top.result-hero::after { content:''; position:absolute; width:350px; height:350px; right:15%; bottom:-295px; border-radius:50%; border:1px solid #9cc4e81f; box-shadow:0 0 0 55px #9cc4e808,0 0 0 115px #9cc4e805; pointer-events:none; }
+  .result-top.result-hero > div { max-width:none; min-width:0; }
+  .result-hero-main,.result-hero-side { position:relative; z-index:1; }
+  .result-kicker { display:inline-flex; gap:8px; align-items:center; color:#dcc99f; font-size:11px; font-weight:700; letter-spacing:.05em; }
+  .result-kicker .icon { width:16px; height:16px; }
+  .result-route { display:flex; align-items:center; gap:16px; margin:23px 0 20px; }
+  .result-route-end { min-width:0; max-width:48%; }
+  .result-route-end > span { display:block; color:#a9bbce; font-size:11px; margin-bottom:4px; }
+  .result-route-end strong { display:block; color:#d7e5f2; font-size:17px; font-weight:650; line-height:1.35; overflow-wrap:anywhere; }
+  .result-route-arrival { max-width:62%; }
+  .result-route-arrival strong { color:#f1f5fb; font-size:clamp(28px,3vw,42px); font-weight:750; letter-spacing:-.035em; line-height:1.25; }
+  .result-route-track { position:relative; flex:1; min-width:42px; border-top:1px dashed #9fb9d180; }
+  .result-route-track::before { content:''; position:absolute; left:0; top:-4px; width:7px; height:7px; border-radius:50%; background:#9ac5e8; }
+  .result-route-track > span { position:absolute; right:0; top:-17px; color:#d4bc83; font-size:19px; }
+  .result-top.result-hero h1 { max-width:680px; margin:0 0 8px; color:#e4edf7; font-size:clamp(19px,1.7vw,25px); font-weight:650; line-height:1.45; }
+  .result-top.result-hero p { max-width:690px; margin:0; color:#b9cadd; font-size:13px; line-height:1.85; }
+  .result-hero-meta { display:flex; gap:8px 18px; flex-wrap:wrap; margin-top:18px; color:#c4d4e6; font-size:12px; }
+  .result-hero-meta > span { display:inline-flex; gap:6px; align-items:center; }
+  .result-hero-meta .icon { width:15px; height:15px; color:#9fc4e3; }
+  .result-hero-side { display:flex; flex-direction:column; align-items:flex-start; padding:24px; border:1px solid #45637e; border-radius:17px; background:#0d1a2bc9; box-shadow:0 12px 35px #06101b32; }
+  .result-budget-label { color:#d6c18f; font-size:11px; font-weight:700; letter-spacing:.04em; }
+  .result-hero-estimate { color:#f2f6fa; font:750 clamp(34px,3vw,45px)/1.2 Manrope,'Noto Sans Thai',sans-serif; letter-spacing:-.05em; margin-top:9px; }
+  .result-budget-caption { color:#aebed0; font-size:12px; }
+  .result-budget-meter { width:100%; height:8px; overflow:hidden; margin:20px 0 12px; border-radius:20px; background:#31475f; }
+  .result-budget-meter > span { display:block; height:100%; border-radius:inherit; background:linear-gradient(90deg,#81b4dd,#d2bd8e); }
+  .result-hero-balance { display:inline-flex; align-items:center; min-height:28px; padding:3px 10px; border-radius:8px; background:#1c374f; color:#c6e3f6; font-size:12px; font-weight:700; }
+  .result-hero-balance.over { background:#422d32; color:#f1bbb5; }
+  .result-hero-side:has(.over) .result-budget-meter > span { background:linear-gradient(90deg,#d1a5a1,#ecb9a5); }
+  .result-top.result-hero .result-view-plan { width:100%; margin:24px 0 0; min-height:46px; font-size:13px; }
+  .result-view-plan .icon { width:16px; height:16px; }
+  .result-actions { align-items:center; margin-bottom:15px; padding:0 2px; }
+  .result-action-controls { display:flex; align-items:center; gap:7px; flex-wrap:wrap; }
+  .result-actions .saved-state { margin:0; color:#a5c4df; font-size:11px; }
+  .result-export { position:relative; }
+  .result-export > summary { list-style:none; user-select:none; }
+  .result-export > summary::-webkit-details-marker { display:none; }
+  .result-export > summary .export-chevron { font-size:16px; line-height:1; margin-left:2px; transition:transform .2s; }
+  .result-export[open] > summary .export-chevron { transform:rotate(180deg); }
+  .result-export-menu { position:absolute; z-index:20; right:0; top:calc(100% + 7px); min-width:210px; padding:6px; border:1px solid #45617c; border-radius:12px; background:#172638; box-shadow:0 18px 40px #0008; }
+  .result-export-menu button { display:flex; align-items:center; gap:10px; width:100%; min-height:42px; padding:9px 11px; border-radius:7px; text-align:left; color:#dce5f0; font-size:12px; }
+  .result-export-menu button:hover,.result-export-menu button:focus-visible { background:#28415d; }
+  .result-export-menu .icon { width:16px; height:16px; color:#a9cde9; }
+  .trip-stats { grid-template-columns:repeat(3,minmax(0,1fr)); gap:11px; margin:0 0 18px; }
+  .trip-stats .stat { min-width:0; min-height:80px; padding:13px 16px; background:#141e2c; border-color:#31435a; }
+  .trip-stats .stat-icon { width:36px; height:36px; flex:none; }
+  .trip-stats .stat-label { font-size:11px; }
+  .trip-stats .stat strong { color:#e7eff8; font-size:19px; line-height:1.4; }
+  .trip-stats .stat small { display:block; color:#9eb2c9; font-size:11px; line-height:1.4; }
+  .day-navigation { position:sticky; top:0; z-index:6; display:flex; align-items:center; gap:18px; min-width:0; margin:0 0 18px; padding:11px 0 10px; border-bottom:1px solid #3c526c; background:#0c121cf2; backdrop-filter:blur(14px); scroll-margin-top:0; }
+  .day-nav-intro { display:flex; flex-direction:column; flex:none; min-width:112px; line-height:1.4; }
+  .day-nav-intro .eyebrow { color:#b7a477; font-size:9px; letter-spacing:.1em; }
+  .day-nav-intro strong { color:#e1ebf5; font-size:13px; }
+  .day-navigation .day-tabs { flex:1; min-width:0; padding:0 0 2px; }
+  .day-navigation .day-tab { min-width:75px; min-height:52px; padding:7px 13px; border-color:#394b60; background:#172536; color:#bdd0e3; font-size:12px; line-height:1.4; }
+  .day-navigation .day-tab small { font-size:10px; color:#aebdd0; }
+  .day-navigation .day-tab[aria-selected=true] { background:#2a4b6c; border-color:#8bbbe0; color:#f2f6fa; box-shadow:inset 0 2px 0 #d0b989; }
+  .day-navigation .day-tab[aria-selected=true] small { color:#d4e5f4; }
+  .day-panel { padding-top:0; }
+  .day-panel .day-heading { position:relative; display:flex; align-items:center; gap:20px; min-height:170px; margin:0 0 23px; padding:24px 27px; overflow:hidden; border:1px solid #3b5672; border-radius:17px; background:linear-gradient(115deg,#213b59,#172c43 64%,#17283b); }
+  .day-panel .day-heading::after { content:''; position:absolute; right:-20px; bottom:-124px; width:210px; height:210px; border:1px solid #a5cbea18; border-radius:50%; box-shadow:0 0 0 35px #a5cbea08,0 0 0 70px #a5cbea06; pointer-events:none; }
+  .day-heading-copy { position:relative; z-index:1; min-width:0; flex:1; }
+  .day-kicker { color:#d8c293; font-size:11px; font-weight:700; letter-spacing:.06em; }
+  .day-panel .day-heading h2 { margin:6px 0 7px; color:#f0f5fa; font-size:clamp(20px,2vw,26px); font-weight:700; line-height:1.45; }
+  .day-panel .day-heading p { color:#bdd0e5; font-size:13px; line-height:1.55; }
+  .day-activity-count { display:inline-flex; gap:6px; align-items:center; color:#9dc6e7; font-size:12px; }
+  .day-activity-count .icon { width:14px; height:14px; }
+  .day-panel .daily-total { position:relative; z-index:1; min-width:144px; padding:11px 13px; border:1px solid #52708c; border-radius:11px; background:#10243aaf; color:#bdd0e5; font-size:11px; }
+  .day-panel .daily-total strong { color:#f3f5f9; font-size:24px; line-height:1.3; }
+  .day-panel .daily-total small { display:block; color:#a9bfd5; font-size:10px; }
+  .activity-card { grid-template-columns:76px minmax(0,1fr); gap:13px; margin-bottom:16px; }
+  .activity-card::before { left:37px; top:100px; border-color:#4d6f91; }
+  .activity-time { padding-top:12px; color:#bcd9f0; font-size:13px; }
+  .activity-time .activity-stop { display:grid; place-items:center; width:26px; height:26px; margin:0 auto 5px; border:1px solid #547699; border-radius:50%; background:#233e59; color:#d9c794; font-size:10px; font-weight:700; line-height:1; }
+  .activity-time strong { display:block; font-size:13px; }
+  .activity-time small { font-size:10px; }
+  .activity-body { border-color:#31445d; border-left:2px solid #496e94; }
+  .activity-body h3 { color:#e8f0f8; font-size:17px; line-height:1.5; }
+  .activity-body p { color:#b7c8da; font-size:13px; line-height:1.8; }
+  .activity-meta,.activity-meta a { font-size:11px; }
+  .category-tag { font-size:10px; }
+  .cost-tag { color:#d0e2f2; font-size:12px; }
+  .activity-tip { font-size:11px; }
+}
+@media screen and (max-width:1000px) {
+  .result-top.result-hero { grid-template-columns:1fr; gap:19px; padding:26px; }
+  .result-hero-side { display:grid; grid-template-columns:1fr auto; align-items:center; gap:5px 20px; padding:17px 20px; }
+  .result-hero-side .result-budget-meter { grid-column:1 / -1; margin:9px 0 2px; }
+  .result-hero-side .result-hero-balance { grid-column:1; justify-self:start; }
+  .result-top.result-hero .result-view-plan { grid-column:2; grid-row:1 / span 2; width:auto; margin:0; }
+  .result-hero-side .result-budget-caption { grid-column:1; }
+  .result-hero-side .result-hero-estimate { grid-column:1; font-size:34px; }
+  .result-hero-side .result-budget-label { grid-column:1; }
+}
+@media screen and (max-width:760px) {
+  .result-top.result-hero { padding:22px 19px; border-radius:17px; }
+  .result-route { display:block; margin:18px 0; }
+  .result-route-end,.result-route-arrival { max-width:none; }
+  .result-route-end strong { font-size:15px; }
+  .result-route-arrival strong { font-size:32px; }
+  .result-route-track { display:block; width:1px; height:17px; min-width:0; margin:9px 0 8px 5px; border-top:0; border-left:1px dashed #9fb9d180; }
+  .result-route-track::before { top:-2px; left:-4px; }
+  .result-route-track > span { left:4px; right:auto; top:1px; font-size:13px; }
+  .result-top.result-hero h1 { font-size:19px; }
+  .result-top.result-hero p { font-size:13px; }
+  .result-hero-meta { font-size:12px; margin-top:14px; }
+  .result-hero-side { display:flex; align-items:stretch; gap:0; padding:17px; }
+  .result-hero-side .result-hero-estimate { font-size:33px; }
+  .result-hero-side .result-budget-meter { margin:12px 0 10px; }
+  .result-hero-side .result-hero-balance { align-self:flex-start; }
+  .result-top.result-hero .result-view-plan { width:100%; margin:16px 0 0; }
+  .result-actions { display:flex; align-items:flex-start; flex-direction:column; gap:10px; }
+  .result-action-controls { width:100%; }
+  .result-action-controls > .button { flex:1; min-width:0; padding:9px 10px; }
+  .result-action-controls .result-export { flex:1.2; }
+  .result-export > summary { padding:9px 7px; white-space:nowrap; }
+  .trip-stats { grid-template-columns:repeat(3,minmax(0,1fr)); gap:7px; }
+  .trip-stats .stat { display:block; min-height:87px; padding:10px; }
+  .trip-stats .stat-icon { display:none; }
+  .trip-stats .stat-label,.trip-stats .stat small { font-size:10px; }
+  .trip-stats .stat strong { font-size:16px; }
+  .day-navigation { display:block; padding:10px 0 8px; margin-bottom:14px; }
+  .day-nav-intro { flex-direction:row; align-items:baseline; gap:8px; margin-bottom:8px; }
+  .day-nav-intro strong { font-size:13px; }
+  .day-panel .day-heading { display:block; min-height:0; padding:19px; margin-bottom:18px; }
+  .day-panel .day-heading h2 { font-size:20px; }
+  .day-panel .day-heading p { font-size:12px; }
+  .day-panel .daily-total { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:18px; padding:9px 11px; text-align:left; font-size:11px; }
+  .day-panel .daily-total strong { font-size:21px; margin-left:auto; }
+  .day-panel .daily-total small { font-size:10px; }
+  .activity-card { grid-template-columns:47px minmax(0,1fr); gap:7px; }
+  .activity-card::before { left:23px; top:87px; }
+  .activity-time { font-size:11px; }
+  .activity-time .activity-stop { width:23px; height:23px; font-size:9px; }
+  .activity-time strong { font-size:11px; }
+  .activity-time small { font-size:9px; }
+  .activity-body { padding:15px; }
+  .activity-body h3 { font-size:16px; }
+  .activity-body p { font-size:13px; }
+  .activity-meta,.activity-meta a { font-size:11px; }
+  .activity-tip { font-size:11px; }
+}
+@media screen and (max-width:360px) {
+  .result-top.result-hero { padding:18px 15px; }
+  .result-route-arrival strong { font-size:28px; }
+  .result-action-controls { gap:5px; }
+  .result-action-controls > .button,.result-export > summary { font-size:10px; padding:8px 6px; }
+  .trip-stats .stat strong { font-size:14px; }
+  .day-panel .day-heading { padding:16px; }
+}
+@media print {
+  .result-top.result-hero { display:block; margin:0 0 12px; }
+  .result-route { display:flex; align-items:center; gap:12px; margin:9px 0; }
+  .result-route-end > span { display:block; font-size:8pt; }
+  .result-route-end strong { display:block; font-size:13pt; }
+  .result-route-track,.result-budget-meter,.result-hero-side .button,.day-navigation { display:none!important; }
+  .result-hero-side { margin:10px 0; }
+  .result-hero-estimate { font-size:15pt; margin:0 8px; }
+  .result-hero-meta { display:flex; gap:12px; font-size:9pt; }
+  .trip-stats { grid-template-columns:repeat(3,1fr); }
+  .day-heading { break-after:avoid; }
+  .day-kicker,.day-activity-count { font-size:8pt; }
+  .activity-stop { display:none; }
+}
+
 </style>
 </head>
 <body>
@@ -200,7 +375,7 @@
         <button class="nav-item" data-action="guide"><span data-icon="help"></span>ใช้งานอย่างไร</button>
       </nav>
       <div class="sidebar-note"><span data-icon="route"></span><p>วางแผนให้พอดีกับคุณ<small>จุดหมาย งบ และสไตล์ที่ชอบ<br>ที่เหลือให้เราช่วยคิด</small></p><div class="note-route" aria-hidden="true">· · · · · · · · ↗</div></div>
-      <div class="sidebar-bottom"><button class="nav-item" data-action="connection"><span data-icon="settings"></span>การเชื่อมต่อ & API</button><div class="sidebar-footer"><span class="status-dot" id="backendDot"></span><span id="backendLabel">กำลังเชื่อมต่อ</span><span class="version">v8.1</span></div></div>
+      <div class="sidebar-bottom"><button class="nav-item" data-action="connection"><span data-icon="settings"></span>การเชื่อมต่อ & API</button><div class="sidebar-footer"><span class="status-dot" id="backendDot"></span><span id="backendLabel">กำลังเชื่อมต่อ</span><span class="version">v8.2</span></div></div>
     </aside>
     <div class="workspace">
       <header class="topbar"><div class="breadcrumb"><span class="mobile-brand" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
@@ -237,7 +412,34 @@
   <path d="M29 35 L50 14 L35 50 Z" fill="#477ba8"/>
   <path d="M29 35 L50 14" stroke="#0d1625" stroke-width="1.4"/>
 </svg></span></div><div class="eyebrow muted">A LITTLE PLANNING. A LOT TO LOOK FORWARD TO.</div><h2>กำลังต่อเรื่องราวของทริปคุณ</h2><p id="loadingDestination"></p><div class="loading-steps"><div id="stepResearch" class="loading-step current"><span class="step-marker"></span><span>ค้นข้อมูลประกอบ</span></div><div id="stepPlan" class="loading-step"><span class="step-marker"></span><span>วางเส้นทางรายวัน</span></div><div id="stepFinish" class="loading-step"><span class="step-marker"></span><span>ตรวจและรวมค่าใช้จ่าย</span></div></div><p id="loadingDetail" class="loading-detail">กำลังค้นหาสถานที่และข้อมูลการเดินทาง</p><progress id="loadingProgress" max="30" value="0" aria-label="จำนวนวันที่สร้างเสร็จ"></progress><p class="small muted" id="loadingElapsed">เริ่มสร้างแผนแล้ว</p><button class="button ghost" data-action="stop">หยุดสร้างวันถัดไป</button></section>
-          <section id="resultScreen" hidden><div class="result-top"><div><div class="eyebrow muted">YOUR NEXT CHAPTER</div><h1 id="resultTitle" tabindex="-1"></h1><p id="resultSummary" class="muted"></p></div><button class="button secondary" data-action="edit"><span data-icon="edit"></span>ปรับรายละเอียด</button></div><div class="result-actions"><span class="saved-state" id="savedState"></span><div><button class="button small-button secondary" data-action="share"><span data-icon="share"></span>แชร์</button><button class="button small-button secondary" data-action="copy"><span data-icon="copy"></span>คัดลอก</button><button class="button small-button secondary" data-action="image"><span data-icon="image"></span>ภาพรายวัน</button><button class="button small-button secondary" data-action="print"><span data-icon="print"></span>พิมพ์ / PDF</button><button class="button small-button secondary" data-action="export"><span data-icon="download"></span>ไฟล์ JSON</button></div></div><div id="planWarnings"></div><div class="trip-stats" id="tripStats"></div><div class="results-grid"><div class="itinerary"><div class="day-tabs" role="tablist" aria-label="เลือกวันเดินทาง" id="dayTabs"></div><div id="dayPanels"></div><div id="travelNotes"></div></div><aside class="result-aside"><div class="panel budget-panel" id="budgetPanel"></div><div class="panel packing-panel" id="packingPanel"></div></aside></div><section class="panel sources-panel" id="sourcesPanel"></section></section>
+          <section id="resultScreen" hidden>
+            <header class="result-top result-hero">
+              <div class="result-hero-main">
+                <div class="result-kicker"><span data-icon="sparkles"></span> แผนทริปของคุณพร้อมแล้ว</div>
+                <div class="result-route" aria-label="เส้นทางการเดินทาง">
+                  <div class="result-route-end"><span>ออกเดินทางจาก</span><strong id="resultOrigin"></strong></div>
+                  <span class="result-route-track" aria-hidden="true"><span>↗</span></span>
+                  <div class="result-route-end result-route-arrival"><span>จุดหมายของทริป</span><strong id="resultDestination"></strong></div>
+                </div>
+                <h1 id="resultTitle" tabindex="-1"></h1>
+                <p id="resultSummary"></p>
+                <div class="result-hero-meta" id="resultHeroMeta"></div>
+              </div>
+              <div class="result-hero-side">
+                <span class="result-budget-label">ประมาณการทั้งทริป</span>
+                <strong class="result-hero-estimate" id="resultHeroEstimate"></strong>
+                <span class="result-budget-caption" id="resultHeroBudgetLine"></span>
+                <div class="result-budget-meter" id="resultHeroMeter" role="progressbar" aria-label="สัดส่วนงบประมาณที่ใช้" aria-valuemin="0" aria-valuemax="100"><span id="resultHeroMeterFill"></span></div>
+                <span class="result-hero-balance" id="resultHeroBalance"></span>
+                <a class="button primary result-view-plan" href="#dayNavigation">ดูแผนรายวัน <span data-icon="arrow-right"></span></a>
+              </div>
+            </header>
+            <div class="result-actions"><span class="saved-state" id="savedState"></span><div class="result-action-controls"><button class="button small-button secondary" data-action="edit"><span data-icon="edit"></span>แก้ไขแผน</button><button class="button small-button secondary" data-action="share"><span data-icon="share"></span>แชร์</button><details class="result-export"><summary class="button small-button secondary"><span data-icon="download"></span>บันทึก / ส่งออก <span class="export-chevron" aria-hidden="true">⌄</span></summary><div class="result-export-menu"><button data-action="copy"><span data-icon="copy"></span>คัดลอกข้อความ</button><button data-action="image"><span data-icon="image"></span>ภาพรายวัน</button><button data-action="print"><span data-icon="print"></span>พิมพ์ / PDF</button><button data-action="export"><span data-icon="download"></span>ไฟล์ JSON</button></div></details></div></div>
+            <div id="planWarnings"></div>
+            <div class="trip-stats" id="tripStats"></div>
+            <div class="results-grid"><div class="itinerary"><div class="day-navigation" id="dayNavigation"><div class="day-nav-intro"><span class="eyebrow">THE DAILY ROUTE</span><strong>แผนเที่ยวรายวัน</strong></div><div class="day-tabs" role="tablist" aria-label="เลือกวันเดินทาง" id="dayTabs"></div></div><div id="dayPanels"></div><div id="travelNotes"></div></div><aside class="result-aside"><div class="panel budget-panel" id="budgetPanel"></div><div class="panel packing-panel" id="packingPanel"></div></aside></div>
+            <section class="panel sources-panel" id="sourcesPanel"></section>
+          </section>
         </section>
         <section id="savedView" hidden><div class="section-heading saved-heading"><div><div class="eyebrow muted">PLANS WORTH KEEPING</div><h1>ทริปที่บันทึกไว้</h1><p class="muted">พร้อมเปิดอ่าน เมื่อคุณพร้อมออกเดินทาง</p></div><button class="button secondary" data-action="import"><span data-icon="upload"></span>นำเข้าแผน</button></div><label class="input-wrap saved-search"><span data-icon="search"></span><input id="savedSearch" type="search" placeholder="ค้นชื่อทริปหรือจุดหมาย" aria-label="ค้นแผนที่บันทึก"></label><p class="small muted">บันทึกเฉพาะในเบราว์เซอร์นี้ · ส่งออก JSON เพื่อสำรองหรือย้ายอุปกรณ์ <button class="text-button" data-action="recovery">กู้คืนทริป</button></p><div id="storageNotice" class="notice" hidden></div><div id="savedList" class="saved-grid"></div></section>
       </main>
@@ -253,7 +455,7 @@
 /** PUBLIC SETTINGS ONLY. API secrets go in GAS Script Properties (see apps-script/Code.gs). */
 window.TRIP_APP_CONFIG = Object.freeze({
   appName: 'TripPlanner',
-  version: '8.1.0',
+  version: '8.2.0',
   gasUrl: 'https://script.google.com/macros/s/AKfycbzQvAenA1EFR85qv5CTy88BxJIR0EL0KKm7GWkY5lFnLWZJdQBpsV7rcjGumQyYCxvfgw/exec',
   gasEditorUrl: 'https://script.google.com/home/projects/1KMuYaHImc-CAzdRQwJye8kYO27sYch9QSjqb-_OaSDkfJFHZNTonprU6/edit',
   githubUrl: 'https://github.com/BassSG/TripPlanner',
@@ -598,7 +800,7 @@ window.TRIP_APP_CONFIG = Object.freeze({
       }
       step('stepPlan','done');step('stepFinish','current');$('loadingDetail').textContent='กำลังรวมแผนและคำนวณค่าใช้จ่ายทั้งกลุ่ม';
       const result=checkedResult(await rpc('completeTrip',[prepared.ticket]));if(generation!==state.generation)return;
-      state.plan=M.normalizePlan(result.plan);state.activeDay=0;state.resume=null;step('stepFinish','done');renderPlan();savePlan(state.plan);screen('resultScreen');$('resultTitle').focus();notice('แผนทริปพร้อมแล้ว ตรวจรายละเอียดก่อนเดินทางได้เลย');
+      state.plan=M.normalizePlan(result.plan);state.activeDay=0;state.resume=null;step('stepFinish','done');renderPlan();savePlan(state.plan);screen('resultScreen');$('resultTitle').focus();$('resultScreen').scrollIntoView({block:'start',behavior:'auto'});notice('แผนทริปพร้อมแล้ว ตรวจรายละเอียดก่อนเดินทางได้เลย');
     }catch(error){if(generation!==state.generation)return;if(error.code==='EXPIRED'||error.code==='INVALID_CHUNK')state.resume=null;screen('formScreen');$('formError').textContent=error.message;$('formError').hidden=false;$('formError').scrollIntoView({block:'center',behavior:'smooth'});}
     finally{if(generation===state.generation){state.busy=false;clearInterval(elapsedTimer);$('generateBtn').disabled=false;$('generateLabel').textContent=state.resume?'ลองสร้างแผนต่อ':'สร้างแผนทริปของฉัน';}}
   }
@@ -608,22 +810,38 @@ window.TRIP_APP_CONFIG = Object.freeze({
 
   function renderPlan() {
     const p=state.plan;if(!p)return;$('resultTitle').textContent=p.tripTitle;$('resultSummary').textContent=p.summary;
+    $('resultOrigin').textContent=p.origin;$('resultDestination').textContent=p.destination;
+    const dateRange=p.startDate?M.dateForDay(p.startDate,0)+(p.days.length>1?' – '+M.dateForDay(p.startDate,p.days.length-1):''):'เลือกวันเดินทางภายหลังได้';
+    $('resultHeroMeta').innerHTML='<span>'+icon('calendar')+esc(p.days.length+' วัน · '+dateRange)+'</span><span>'+icon('users')+esc(p.totalTravelers+' คน')+'</span>';
+    const expense=p.totalExpense,used=p.totalBudget>0?Math.round(expense.total/p.totalBudget*100):100;
+    $('resultHeroEstimate').textContent='฿'+M.fmt(expense.total);
+    $('resultHeroBudgetLine').textContent='จากงบที่ตั้งไว้ ฿'+M.fmt(p.totalBudget);
+    $('resultHeroMeter').setAttribute('aria-valuenow',String(Math.min(100,Math.max(0,used))));
+    $('resultHeroMeter').setAttribute('aria-valuetext',used+'% ของงบที่ตั้งไว้');
+    $('resultHeroMeterFill').style.width=Math.min(100,Math.max(0,used))+'%';
+    $('resultHeroBalance').textContent=(expense.remaining<0?'เกินงบ ':'เหลืองบ ' )+'฿'+M.fmt(Math.abs(expense.remaining));
+    $('resultHeroBalance').classList.toggle('over',expense.remaining<0);
     $('planWarnings').innerHTML=p.warnings.map(w=>'<div class="notice">'+esc(w)+'</div>').join('');
-    const items=[['calendar',p.days.length+' วัน',p.startDate?M.dateForDay(p.startDate,0)+' – '+M.dateForDay(p.startDate,p.days.length-1):'เลือกวันเดินทางได้ทีหลัง'],['users',p.totalTravelers+' คน','งบทุกยอดสำหรับทั้งกลุ่ม'],['wallet','฿'+M.fmt(p.totalBudget),'งบที่คุณตั้งไว้'],['sparkles','฿'+M.fmt(p.totalExpense.total),'ค่าใช้จ่ายประมาณการ']];
-    $('tripStats').innerHTML=items.map((item,i)=>'<div class="stat"><span class="stat-icon '+(i===3?'gold':'')+'">'+icon(item[0])+'</span><div><span class="stat-label">'+['ระยะเวลา','ผู้ร่วมเดินทาง','งบรวม','รวมประมาณการ'][i]+'</span><strong>'+esc(item[1])+'</strong><small>'+esc(item[2])+'</small></div></div>').join('');
+    const stops=p.days.reduce((count,day)=>count+day.activities.length,0);
+    const items=[['calendar','ระยะเวลา',p.days.length+' วัน',dateRange],['users','ผู้ร่วมเดินทาง',p.totalTravelers+' คน','ค่าใช้จ่ายคิดรวมทั้งกลุ่ม'],['pin','จุดแวะในแผน',stops+' แห่ง','จัดลำดับเส้นทางตามวัน']];
+    $('tripStats').innerHTML=items.map(item=>'<div class="stat"><span class="stat-icon">'+icon(item[0])+'</span><div><span class="stat-label">'+esc(item[1])+'</span><strong>'+esc(item[2])+'</strong><small>'+esc(item[3])+'</small></div></div>').join('');
     $('dayTabs').innerHTML=p.days.map((day,i)=>'<button class="day-tab" id="dayTab-'+i+'" role="tab" aria-controls="dayPanel-'+i+'" aria-selected="'+(i===state.activeDay)+'" tabindex="'+(i===state.activeDay?'0':'-1')+'" data-day="'+i+'">วันที่ '+day.dayNumber+(p.startDate?'<small>'+esc(M.dateForDay(p.startDate,i))+'</small>':'')+'</button>').join('');
     $('dayPanels').innerHTML=p.days.map((day,i)=>renderDay(day,i)).join('');renderBudget();renderPacking();renderNotes();renderSources();
     const saved=state.saved.some(v=>v.id===p.id);$('savedState').innerHTML=icon(saved?'check':'info')+esc(saved?'บันทึกในอุปกรณ์นี้แล้ว':'พร้อมส่งออกหรือบันทึกแผน');
   }
   function renderDay(day,index) {
-    const activities=day.activities.map(a=>'<article class="activity-card"><div class="activity-time">'+esc(a.time)+'<small>'+esc(a.endTime)+'</small></div><div class="activity-body"><div class="activity-top"><span class="category-tag '+a.category+'">'+icon(a.category)+esc(M.categories[a.category])+'</span><span class="cost-tag">'+(a.cost===0?'ไม่มีค่าใช้จ่ายเพิ่ม':'฿'+M.fmt(a.cost))+'</span></div><h3>'+esc(a.title)+'</h3><p>'+esc(a.description)+'</p><div class="activity-meta"><a href="'+esc(M.mapUrl(a.mapQuery))+'" target="_blank" rel="noopener noreferrer">'+icon('pin')+esc(a.location)+' ↗</a><span>'+esc(a.costNote||'ยอดประมาณการทั้งกลุ่ม')+'</span></div>'+(a.tips?'<div class="activity-tip">'+icon('info')+esc(a.tips)+'</div>':'')+(a.sourceIds.length?'<div class="source-ref">ข้อมูลประกอบ: '+a.sourceIds.map(s=>'<a href="#source-'+esc(s)+'">'+esc(s)+'</a>').join(' · ')+'</div>':'')+'</div></article>').join('');
+    const activities=day.activities.map((a,stop)=>'<article class="activity-card"><div class="activity-time"><span class="activity-stop">'+String(stop+1).padStart(2,'0')+'</span><strong>'+esc(a.time)+'</strong><small>'+esc(a.endTime)+'</small></div><div class="activity-body"><div class="activity-top"><span class="category-tag '+a.category+'">'+icon(a.category)+esc(M.categories[a.category])+'</span><span class="cost-tag">'+(a.cost===0?'ไม่มีค่าใช้จ่ายเพิ่ม':'฿'+M.fmt(a.cost))+'</span></div><h3>'+esc(a.title)+'</h3><p>'+esc(a.description)+'</p><div class="activity-meta"><a href="'+esc(M.mapUrl(a.mapQuery))+'" target="_blank" rel="noopener noreferrer">'+icon('pin')+esc(a.location)+' ↗</a><span>'+esc(a.costNote||'ยอดประมาณการทั้งกลุ่ม')+'</span></div>'+(a.tips?'<div class="activity-tip">'+icon('info')+esc(a.tips)+'</div>':'')+(a.sourceIds.length?'<div class="source-ref">ข้อมูลประกอบ: '+a.sourceIds.map(s=>'<a href="#source-'+esc(s)+'">'+esc(s)+'</a>').join(' · ')+'</div>':'')+'</div></article>').join('');
     const a=day.accommodation;const stay=a?'<div class="hotel-card">'+icon('hotel')+'<div><span class="eyebrow muted">STAY FOR THE NIGHT</span><h3>'+esc(a.name)+'</h3><p>'+esc(a.highlights)+'</p><a href="'+esc(M.mapUrl(a.mapQuery))+'" target="_blank" rel="noopener noreferrer">ดูที่พักใน Google Maps ↗</a></div><span class="hotel-cost"><strong>฿'+M.fmt(a.pricePerNight)+'</strong>/ คืน ทั้งกลุ่ม</span></div>':'';
-    return '<section class="day-panel" id="dayPanel-'+index+'" role="tabpanel" aria-labelledby="dayTab-'+index+'" '+(index!==state.activeDay?'hidden':'')+'><div class="day-heading"><div><h2>'+esc(day.title||'วันที่ '+day.dayNumber)+'</h2><p>'+esc(day.theme)+'</p></div><div class="daily-total">รวมวันนี้ทั้งกลุ่ม<strong>฿'+M.fmt(day.dailyExpense.total)+'</strong></div></div><div class="timeline">'+activities+'</div>'+stay+'</section>';
+    const first=day.activities[0],last=day.activities[day.activities.length-1];
+    const timeRange=first&&last?first.time+' – '+last.endTime:'';
+    const dayMeta=day.activities.length+' จุดแวะ'+(timeRange?' · '+timeRange:'');
+    return '<section class="day-panel" id="dayPanel-'+index+'" role="tabpanel" aria-labelledby="dayTab-'+index+'" '+(index!==state.activeDay?'hidden':'')+'><div class="day-heading"><div class="day-heading-copy"><span class="day-kicker">วันที่ '+String(day.dayNumber).padStart(2,'0')+' / '+state.plan.days.length+(state.plan.startDate?' · '+esc(M.dateForDay(state.plan.startDate,index)):'')+'</span><h2>'+esc(day.title||'วันที่ '+day.dayNumber)+'</h2><p>'+esc(day.theme)+'</p><span class="day-activity-count">'+icon('route')+esc(dayMeta)+'</span></div><div class="daily-total">ประมาณการวันนี้<strong>฿'+M.fmt(day.dailyExpense.total)+'</strong><small>ทั้งกลุ่ม</small></div></div><div class="timeline">'+activities+'</div>'+stay+'</section>';
   }
   function setDay(index,focus=false) {
     if(!state.plan||index<0||index>=state.plan.days.length)return;state.activeDay=index;
     document.querySelectorAll('[data-day]').forEach((button,i)=>{button.setAttribute('aria-selected',String(i===index));button.tabIndex=i===index?0:-1;});
     document.querySelectorAll('.day-panel').forEach((panel,i)=>{panel.hidden=i!==index;});if(focus)$('dayTab-'+index).focus();
+    $('dayNavigation').scrollIntoView({block:'start',behavior:'auto'});
   }
   function renderBudget() {
     const p=state.plan,e=p.totalExpense;const used=p.totalBudget>0?Math.min(100,Math.round(e.total/p.totalBudget*100)):100;
@@ -647,7 +865,7 @@ window.TRIP_APP_CONFIG = Object.freeze({
     if(state.storageRaw){const button=document.createElement('button');button.className='text-button';button.textContent='ดาวน์โหลดข้อมูลเดิม';button.dataset.action='recover-storage';$('storageNotice').append(button);}
     $('savedList').innerHTML=plans.length?plans.map(p=>'<article class="panel saved-card"><span class="saved-destination">'+icon('pin')+esc(p.destination)+'</span><button class="icon-button" data-delete="'+esc(p.id)+'" aria-label="ลบทริป '+esc(p.tripTitle)+'">'+icon('trash')+'</button><h3>'+esc(p.tripTitle)+'</h3><p>'+esc(p.summary.slice(0,120))+'</p><span class="saved-date">'+esc(new Date(p.createdAt).toLocaleDateString('th-TH'))+'</span><div class="saved-card-meta"><span>'+p.days.length+' วัน</span><span>'+p.totalTravelers+' คน</span><span>งบ ฿'+M.fmt(p.totalBudget)+'</span></div><button class="button secondary" data-open="'+esc(p.id)+'">เปิดแผนทริป '+icon('arrow-right')+'</button></article>').join(''):'<div class="empty-state">'+icon('bookmark')+'<h3>'+(term?'ยังไม่พบทริปที่ค้นหา':'เก็บทริปแรกของคุณไว้ที่นี่')+'</h3><p>'+(term?'ลองค้นชื่อทริปหรือจุดหมายอื่น':'สร้างแผนใหม่แล้วเราจะบันทึกให้อัตโนมัติ<br>หรือเพิ่มแผนจากไฟล์ JSON ที่เคยส่งออก')+'</p><button class="button primary" data-view="planner">วางแผนทริป '+icon('arrow-right')+'</button><button class="button ghost" data-action="import">นำเข้าแผน</button></div>';
   }
-  function openSaved(id) {if(state.busy){notice('กำลังสร้างแผนใหม่ กรุณารอหรือหยุดสร้างวันถัดไปก่อน');return;}const p=state.saved.find(v=>v.id===id);if(!p)return;state.plan=p;state.activeDay=0;renderPlan();screen('resultScreen');setView('planner');$('resultTitle').focus();}
+  function openSaved(id) {if(state.busy){notice('กำลังสร้างแผนใหม่ กรุณารอหรือหยุดสร้างวันถัดไปก่อน');return;}const p=state.saved.find(v=>v.id===id);if(!p)return;state.plan=p;state.activeDay=0;renderPlan();screen('resultScreen');setView('planner');$('resultTitle').focus();$('resultScreen').scrollIntoView({block:'start',behavior:'auto'});}
 
   function dialog(title,html) {$('dialogTitle').textContent=title;$('dialogBody').innerHTML=html;if(!$('appDialog').open)$('appDialog').showModal();}
   function closeDialog() {$('appDialog').close();if(state.imageUrl){URL.revokeObjectURL(state.imageUrl);state.imageUrl='';}}
@@ -762,7 +980,7 @@ window.TRIP_APP_CONFIG = Object.freeze({
   }
   document.addEventListener('click',event=>{
     const target=event.target.closest('button,a');if(!target)return;
-    if(target.dataset.action){event.preventDefault();handleAction(target.dataset.action).catch(error=>notice(error.message,true));}
+    if(target.dataset.action){event.preventDefault();if(target.closest('.result-export'))target.closest('.result-export').open=false;handleAction(target.dataset.action).catch(error=>notice(error.message,true));}
     if(target.dataset.view){event.preventDefault();setView(target.dataset.view);}
     if(target.dataset.destination){$('destination').value=target.dataset.destination;updatePreview();saveDraft();$('destination').focus();}
     if(target.dataset.interest){const value=target.dataset.interest;if(state.interests.has(value))state.interests.delete(value);else state.interests.add(value);target.setAttribute('aria-pressed',String(state.interests.has(value)));saveDraft();}
