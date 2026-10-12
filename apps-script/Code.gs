@@ -11,7 +11,7 @@
  */
 const TRIP_CONFIG = Object.freeze({
   NAME: 'TripPlanner', VERSION: '8.1.0',
-  FAVICON_URL: 'https://basssg.github.io/TripPlanner/assets/icon-192.png?v=8.1.0',
+  FAVICON_URL: 'https://basssg.github.io/TripPlanner/assets/icon-192.png',
   AI_ENDPOINT: 'https://openrouter.ai/api/v1/chat/completions',
   SEARCH_ENDPOINT: 'https://api.search.brave.com/res/v1/web/search',
   SEARCH_COUNTRY: 'ALL', SEARCH_LANGUAGE: 'th', // Brave does not support country=TH.
