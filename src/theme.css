@@ -131,6 +131,60 @@
   .hero::before { background: linear-gradient(90deg,#0c1b31ef 0%,#122744cc 60%,#10213855 100%); }
   .topbar { background: #0e1622; }
 }
+@media screen {
+  .field > label { color:#d7e4f3; font-weight:650; }
+  .place-field-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:9px; }
+  .place-field-button { display:inline-flex; align-items:center; gap:7px; min-height:40px; padding:7px 11px; border:1px solid #4b6b8b; border-radius:9px; background:#213952; color:#cce5f9; font-size:12px; font-weight:700; }
+  .place-field-button:hover { background:#2d4c69; border-color:#8ab8df; }
+  .place-field-button:disabled { opacity:.45; cursor:not-allowed; }
+  .place-field-button .icon { width:15px; height:15px; }
+  .place-field-hint { color:#9bb0c8; font-size:11px; line-height:1.6; }
+  .place-field-hint.chosen { color:#d7c18e; }
+  #placeDialog { width:min(1040px,calc(100vw - 36px)); max-width:none; max-height:calc(100dvh - 36px); padding:23px; overflow:auto; }
+  #placeDialog .dialog-top { margin-bottom:14px; }
+  #placeDialog .dialog-top h2 { margin:3px 0 0; }
+  .place-picker { color:#c7d7e8; }
+  .place-search > label,.place-picker-side > label { display:block; margin-bottom:7px; color:#d6e3f0; font-size:12px; font-weight:700; }
+  .place-search > div { display:flex; gap:9px; }
+  .place-search input,.place-picker-side input { min-height:46px; padding:10px 13px; border:1px solid #42607f; border-radius:9px; background:#0f1d2e; color:#e5edf7; }
+  .place-search input:focus,.place-picker-side input:focus { outline:2px solid #cfb884; outline-offset:2px; }
+  .place-picker-tools { display:flex; align-items:center; flex-wrap:wrap; gap:12px; margin:13px 0; color:#a5bad0; font-size:12px; }
+  .place-picker-tools .button { min-height:40px; }
+  .place-picker-layout { display:grid; grid-template-columns:minmax(0,1.6fr) minmax(225px,1fr); gap:16px; }
+  #placeMap { height:440px; border:1px solid #486581; border-radius:13px; background:#13263a; z-index:0; }
+  #placeMap .leaflet-tile { filter:brightness(.74) saturate(.72); }
+  #placeMap .leaflet-control-zoom a { background:#1e344b; color:#e1edf8; border-color:#486581; }
+  #placeMap .leaflet-control-zoom a:hover { background:#315371; color:#fff; }
+  #placeMap .leaflet-control-attribution { background:#112033e8; color:#bed3e5; }
+  #placeMap .leaflet-control-attribution a { color:#a9d5f3; }
+  .place-picker-side { display:flex; flex-direction:column; min-width:0; }
+  .place-results { display:grid; align-content:start; gap:7px; max-height:210px; min-height:64px; overflow:auto; margin-bottom:12px; }
+  .place-results p { margin:0; padding:11px; color:#aebed0; font-size:12px; }
+  .place-result { width:100%; min-height:44px; padding:9px 12px; border:1px solid #3a526d; border-radius:8px; background:#1b2d42; color:#dceaf6; text-align:left; font-size:12px; line-height:1.5; }
+  .place-result:hover,.place-result.active { background:#294861; border-color:#8ab8df; }
+  .place-coordinates { min-height:20px; margin-top:6px; color:#91aac3; font-size:11px; font-variant-numeric:tabular-nums; }
+  .place-status { min-height:38px; margin:11px 0; color:#b7cae0; font-size:12px; line-height:1.6; }
+  .place-status.error { color:#e8ada8; }
+  .place-confirm { width:100%; margin-top:auto; }
+  .place-attribution { margin:13px 0 0; color:#9eb2c9; font-size:11px; line-height:1.6; }
+  .place-attribution a { color:#afcfeb; text-decoration:underline; }
+  .result-directions { display:inline-flex; align-items:center; min-height:36px; margin:6px 0 8px; color:#bbdcf4; font-size:12px; font-weight:700; text-decoration:underline; }
+}
+@media screen and (max-width:760px) {
+  .form-section:first-child > .field-grid { grid-template-columns:1fr; gap:20px; }
+  .form-section:first-child > .field-grid .field { min-width:0; }
+  .form-section:first-child > .field-grid .input-wrap input { font-size:15px; }
+  .form-section:first-child > .field-grid .place-field-actions { gap:8px; }
+  .form-section:first-child > .field-grid .place-field-button { min-height:44px; }
+  #placeDialog { width:calc(100vw - 16px); max-height:calc(100dvh - 16px); padding:16px; }
+  .place-picker-layout { grid-template-columns:1fr; gap:12px; }
+  #placeMap { height:min(37dvh,320px); min-height:210px; }
+  .place-results { max-height:130px; min-height:0; }
+  .place-search > div { gap:6px; }
+  .place-search .button { padding:8px 10px; font-size:12px; }
+  .place-picker-tools { margin:9px 0; }
+  .place-picker-side { padding-bottom:4px; }
+}
 @media print { :root { color-scheme: light; } }
 
 /* Brand: navy ink, clear blue, restrained champagne gold. */

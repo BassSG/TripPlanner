@@ -10,6 +10,16 @@ test('legacy saved plan envelopes migrate without claiming prices verified',()=>
 test('calendar dates cross month and year boundaries without timezone drift',()=>{assert.ok(M.dateForDay('2026-12-31',1).includes('ม.ค.'));assert.ok(M.dateForDay('2026-02-28',1).includes('มี.ค.'));assert.equal(M.dateForDay('',2),'');});
 test('copied itinerary includes every day and safe Maps links',()=>{const text=M.planText(M.normalizePlan(plan()));assert.ok(text.includes('วันที่ 1'));assert.ok(text.includes('วันที่ 2'));assert.ok(text.includes('https://www.google.com/maps/search/?api=1&query='));assert.ok(text.includes('ประมาณการ'));});
 test('frontend integer and group-size validation matches server expectations',()=>{const input={destination:'กระบี่',origin:'กรุงเทพ',budget:'10000',days:'3',people:'2',children:'0',travelMode:'car'};assert.equal(M.validateInput(input).budget,10000);assert.throws(()=>M.validateInput({...input,days:2.5}));assert.throws(()=>M.validateInput({...input,people:49,children:2}));assert.throws(()=>M.validateInput({...input,startDate:'2026-02-30'}));});
+test('selected map coordinates survive validation and saved plans only with matching labels',()=>{
+  const input={destination:'กระบี่',origin:'กรุงเทพ',budget:10000,days:3,people:2,children:0,travelMode:'car',originPlace:{label:'กรุงเทพ',lat:13.756331,lng:100.501765},destinationPlace:{label:'กระบี่',lat:8.0863,lng:98.9063}};
+  const checked=M.validateInput(input);assert.equal(checked.originPlace.lat,13.756331);assert.equal(checked.destinationPlace.lng,98.9063);
+  assert.equal(M.validateInput({...input,destination:'ระยอง'}).destinationPlace,null);
+  assert.equal(M.normalizePlace({label:'กรุงเทพ',lng:100},'กรุงเทพ'),null);
+  assert.equal(M.normalizePlace({label:'กรุงเทพ',lat:99,lng:100},'กรุงเทพ'),null);
+  const saved=M.normalizePlan({...plan(),origin:'กรุงเทพ',originPlace:input.originPlace,destinationPlace:{label:'เชียงใหม่',lat:18.7883,lng:98.9853}});
+  assert.equal(saved.originPlace.lng,100.501765);assert.equal(saved.destinationPlace.lat,18.7883);
+  assert.ok(M.directionsUrl(saved.origin,saved.destination,saved.originPlace,saved.destinationPlace).includes('origin=13.756331%2C100.501765'));
+});
 test('saved/imported plans remove unrelated sources and dangling source references',()=>{const p=plan();p.sources=[{id:'S1',title:'Kanchanaburi',url:'https://example.com/kanchanaburi'},{id:'S2',title:'Chiang Mai travel',url:'https://example.com/chiang-mai'}];p.days[0].activities[0].sourceIds=['S1','S2'];const result=M.normalizePlan(p);assert.equal(result.sources.length,1);assert.equal(result.sources[0].id,'S2');assert.deepEqual(result.days[0].activities[0].sourceIds,['S2']);assert.equal(M.sourceMatchesDestination({title:'Tokyo highlights',url:'https://example.com/tokyo'},'โตเกียว ญี่ปุ่น'),true);});
 
 test('calendar reminder fires at 09:00 Bangkok the day before travel, across year and leap boundaries',()=>{

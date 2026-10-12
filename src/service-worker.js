@@ -2,7 +2,7 @@
 const VERSION='__CACHE_VERSION__';
 const CACHE='tripplanner-v8-'+VERSION;
 const CORE=['./','./index.html','./offline.html','./manifest.json','./assets/icon.svg?v='+VERSION,'./assets/favicon.ico?v='+VERSION,'./assets/icon-180.png?v='+VERSION,'./assets/icon-192.png','./assets/icon-512.png','./assets/chiang-mai.jpg',
-  './src/styles.css?v='+VERSION,'./src/theme.css?v='+VERSION,'./app-config.js?v='+VERSION,'./src/model.js?v='+VERSION,'./src/app.js?v='+VERSION];
+  './src/styles.css?v='+VERSION,'./src/vendor/leaflet.css?v='+VERSION,'./src/theme.css?v='+VERSION,'./app-config.js?v='+VERSION,'./src/model.js?v='+VERSION,'./src/vendor/leaflet.js?v='+VERSION,'./src/place-picker.js?v='+VERSION,'./src/app.js?v='+VERSION];
 const localUrl=relative=>new URL(relative,self.registration.scope).href;
 const assetPaths=new Set(CORE.map(relative=>new URL(localUrl(relative)).pathname));
 self.addEventListener('install',event=>{event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(CORE.map(localUrl))));});
