@@ -68,13 +68,17 @@
     const sources = originalSources.map((s,i) => {const url = safeUrl(s.url); const id = /^S\d{1,2}$/.test(s.id) ? s.id : 'S' + (i+1); return {id,title:str(s.title,200),description:str(s.description,1000),url,retrievedAt:str(s.retrievedAt,40)};}).filter(s => s.url && sourceMatchesDestination(s,raw.destination));
     sources.forEach(s=>sourceIds.add(s.id));
     const ids = value => strings(value,4).filter(id => sourceIds.has(id));
+    const activityIds = new Set();
     const days = raw.days.map((d,index) => {
       if (!d || !Array.isArray(d.activities) || !d.activities.length || d.activities.length > 40) throw new Error('ข้อมูลกิจกรรมในแผนไม่ครบ');
-      const activities = d.activities.map(a => {
+      const activities = d.activities.map((a,stop) => {
         if (!a || !str(a.title,180)) throw new Error('ไม่พบชื่อกิจกรรมในแผน');
         const category = Object.hasOwn(categories,a.category) ? a.category : 'activity';
-        return {time:str(a.time,10),endTime:str(a.endTime,10),title:str(a.title,180),description:str(a.description),location:str(a.location || a.title,240),
-          mapQuery:str(a.mapQuery || a.location || a.title,240),category,cost:category === 'hotel' ? 0 : money(a.cost ?? 0),costNote:str(a.costNote,240),tips:str(a.tips,500),sourceIds:ids(a.sourceIds),priceStatus:'estimate'};
+        let id=/^[a-zA-Z0-9_-]{1,80}$/.test(a.id || '') ? a.id : 'day'+(index+1)+'-stop'+(stop+1);
+        if(activityIds.has(id))id='day'+(index+1)+'-stop'+(stop+1)+'-'+activityIds.size;
+        activityIds.add(id);
+        return {id,time:str(a.time,10),endTime:str(a.endTime,10),title:str(a.title,180),description:str(a.description),location:str(a.location || a.title,240),
+          mapQuery:str(a.mapQuery || a.location || a.title,240),category,cost:category === 'hotel' ? 0 : money(a.cost ?? 0),costNote:str(a.costNote,240),tips:str(a.tips,500),sourceIds:ids(a.sourceIds),priceStatus:'estimate',edited:a.edited===true};
       });
       const stay = d.accommodation;
       const accommodation = index < raw.days.length - 1 && stay && str(stay.name,200) ? {name:str(stay.name,200),type:str(stay.type,80),pricePerNight:money(stay.pricePerNight ?? 0),
@@ -86,7 +90,8 @@
     const totalExpense = emptyExpense();
     days.forEach(d => Object.keys(totalExpense).forEach(key => {totalExpense[key] = round(totalExpense[key] + d.dailyExpense[key]);}));
     totalExpense.remaining = round(budget - totalExpense.total);
-    const warnings = strings(raw.warnings,15);
+    const warnings = strings(raw.warnings,15).filter(w=>!w.includes('ค่าใช้จ่ายประมาณการเกินงบ')&&!w.includes('แผนนี้ยังไม่ได้แยกค่าเดินทาง')&&!w.includes('แก้แผนด้วยตนเอง'));
+    if(raw.userEdited===true)warnings.push('แก้แผนด้วยตนเองแล้ว โปรดตรวจหมายเหตุที่ AI สร้างไว้เดิม เพราะอาจไม่ตรงกับแผนล่าสุด');
     if(originalSources.length&&!sources.length&&!warnings.some(w=>w.includes('ผลค้นเว็บไม่ตรง')))warnings.push('ผลค้นเว็บไม่ตรงกับจุดหมายนี้ จึงไม่ใช้เป็นแหล่งอ้างอิง แผนยังใช้ราคาโดยประมาณ');
     if (totalExpense.remaining < 0 && !warnings.some(w => w.includes('เกินงบ'))) warnings.push('ค่าใช้จ่ายประมาณการเกินงบ ' + fmt(Math.abs(totalExpense.remaining)) + ' บาท');
     if (totalExpense.transport === 0 && !warnings.some(w => w.includes('ยังไม่ได้แยกค่าเดินทาง'))) warnings.push('แผนนี้ยังไม่ได้แยกค่าเดินทางไว้ อาจมีค่าน้ำมัน ค่าที่จอดรถ หรือค่าโดยสารเพิ่มเติม');
@@ -98,9 +103,57 @@
       startDate:str(raw.startDate,10),travelMode:str(raw.travelMode,30),totalBudget:budget,totalTravelers:integer(raw.totalTravelers || 1,1,50,'จำนวนผู้เดินทางในไฟล์ไม่ถูกต้อง'),
       adults:Number(raw.adults) || Number(raw.totalTravelers) || 1,children:Number(raw.children) || 0,
       weatherInfo:str(raw.weatherInfo,1000),bestTimeToVisit:str(raw.bestTimeToVisit,500),days,totalExpense,
-      packingList:strings(raw.packingList),packedItems:strings(raw.packedItems),importantNotes:strings(raw.importantNotes,15),moneyTips:strings(raw.moneyTips,12),
-      usefulApps:list(raw.usefulApps,8).map(a => ({name:str(a.name,100),purpose:str(a.purpose,250)})),sources,warnings,priceVerified:false,
+      packingList:strings(raw.packingList),packedItems:strings(raw.packedItems),completedStopIds:[...new Set(list(raw.completedStopIds,1200).filter(id=>typeof id==='string'&&/^[a-zA-Z0-9_-]{1,80}$/.test(id)))].filter(id=>days.some(day=>day.activities.some(a=>a.id===id))),importantNotes:strings(raw.importantNotes,15),moneyTips:strings(raw.moneyTips,12),
+      usefulApps:list(raw.usefulApps,8).map(a => ({name:str(a.name,100),purpose:str(a.purpose,250)})),sources,warnings,userEdited:raw.userEdited===true,priceVerified:false,
       priceNote:'ค่าใช้จ่ายทุกยอดเป็นประมาณการสำหรับทั้งกลุ่ม ไม่ใช่ราคายืนยันการจอง',model:str(raw.model,120)};
+  }
+  function changeActivity(plan,dayIndex,stopIndex,change,values={}) {
+    if(!plan||!Array.isArray(plan.days)||!Number.isInteger(dayIndex)||dayIndex<0||dayIndex>=plan.days.length)throw new Error('ไม่พบวันที่ต้องการแก้ไข');
+    const copy=JSON.parse(JSON.stringify(plan)),activities=copy.days[dayIndex].activities;
+    if(change==='add'){
+      if(activities.length>=40)throw new Error('หนึ่งวันเพิ่มได้ไม่เกิน 40 จุดแวะ');
+      activities.push({id:'custom-'+(root.crypto?.randomUUID?.()||Date.now()+'-'+Math.random().toString(36).slice(2)),time:'18:00',endTime:'19:00',title:'จุดแวะใหม่',location:copy.destination,mapQuery:copy.destination,description:'',category:'activity',cost:0,costNote:'',tips:'',sourceIds:[],edited:true});
+    }else{
+      if(!Number.isInteger(stopIndex)||stopIndex<0||stopIndex>=activities.length)throw new Error('ไม่พบจุดแวะที่ต้องการแก้ไข');
+      if(change==='delete'){
+        if(activities.length===1)throw new Error('ต้องเหลืออย่างน้อยหนึ่งจุดแวะต่อวัน');
+        activities.splice(stopIndex,1);
+      }else if(change==='move'){
+        const next=stopIndex+Number(values.direction);
+        if(!Number.isInteger(next)||next<0||next>=activities.length)throw new Error('ย้ายจุดแวะต่อไม่ได้');
+        const left=activities[stopIndex],right=activities[next];
+        const slot={time:left.time,endTime:left.endTime};left.time=right.time;left.endTime=right.endTime;right.time=slot.time;right.endTime=slot.endTime;
+        [activities[stopIndex],activities[next]]=[right,left];
+      }else if(change==='edit'){
+        const title=str(values.title,180),location=str(values.location,240),description=str(values.description,1200);
+        const time=str(values.time,10),endTime=str(values.endTime,10),cost=Number(values.cost);
+        if(title.length<2||location.length<2)throw new Error('กรุณาระบุชื่อและสถานที่อย่างน้อย 2 ตัวอักษร');
+        if(!/^([01]\d|2[0-3]):[0-5]\d$/.test(time)||!/^([01]\d|2[0-3]):[0-5]\d$/.test(endTime)||endTime<=time)throw new Error('เวลาเริ่มและสิ้นสุดไม่ถูกต้อง');
+        if(!Number.isFinite(cost)||cost<0||cost>10000000)throw new Error('ค่าใช้จ่ายต้องอยู่ระหว่าง 0 ถึง 10,000,000 บาท');
+        if(!Object.hasOwn(categories,values.category))throw new Error('กรุณาเลือกประเภทกิจกรรม');
+        if(values.category==='hotel'&&cost!==0)throw new Error('กิจกรรมเช็กอินที่พักคิดค่าใช้จ่าย 0 บาท กรุณาแก้ราคาจากบัตรที่พักด้านล่าง');
+        const activity=activities[stopIndex];
+        Object.assign(activity,{title,location,description,time,endTime,category:values.category,cost:values.category==='hotel'?0:cost,
+          mapQuery:location,costNote:str(values.costNote,240),tips:str(values.tips,500),sourceIds:[],edited:true});
+      }else throw new Error('คำสั่งแก้ไขไม่ถูกต้อง');
+    }
+    copy.userEdited=true;
+    return normalizePlan(copy);
+  }
+  function changeStay(plan,dayIndex,values) {
+    if(!plan?.days?.[dayIndex]?.accommodation || dayIndex>=plan.days.length-1)throw new Error('วันนี้ไม่มีที่พักค้างคืนในแผน');
+    const name=str(values.name,200),price=Number(values.pricePerNight);
+    if(name.length<2)throw new Error('กรุณาระบุชื่อที่พักอย่างน้อย 2 ตัวอักษร');
+    if(!Number.isFinite(price)||price<0||price>10000000)throw new Error('ราคาที่พักต้องอยู่ระหว่าง 0 ถึง 10,000,000 บาท');
+    const copy=JSON.parse(JSON.stringify(plan));
+    Object.assign(copy.days[dayIndex].accommodation,{name,pricePerNight:price,mapQuery:str(values.mapQuery,240)||name,highlights:str(values.highlights,500),sourceIds:[],priceStatus:'estimate'});
+    copy.userEdited=true;
+    return normalizePlan(copy);
+  }
+  function changeBudget(plan,value) {
+    const budget=Number(value);
+    if(!Number.isFinite(budget)||budget<500||budget>10000000)throw new Error('งบรวมต้องอยู่ระหว่าง 500 ถึง 10,000,000 บาท');
+    return normalizePlan({...plan,totalBudget:budget,userEdited:true});
   }
   function dateForDay(startDate,index) {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(startDate || '')) return '';
@@ -172,5 +225,5 @@
     ];
     return lines.map(fold).join('\r\n') + '\r\n';
   }
-  root.TripModel = {categories,fmt,escape,safeUrl,mapUrl,directionsUrl,normalizePlace,sourceMatchesDestination,dayExpense,normalizePlan,validateInput,dateForDay,planText,reminderIcs};
+  root.TripModel = {categories,fmt,escape,safeUrl,mapUrl,directionsUrl,normalizePlace,sourceMatchesDestination,dayExpense,normalizePlan,changeActivity,changeStay,changeBudget,validateInput,dateForDay,planText,reminderIcs};
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -3,7 +3,7 @@
 'use strict';
 const connection = <?!= connection ?>;
 const channel = 'tripplanner-rpc-v1';
-const permitted = new Set(['getAppStatus', 'prepareTrip', 'generateTripDays', 'completeTrip']);
+const permitted = new Set(['getAppStatus', 'prepareTrip', 'generateTripDays', 'completeTrip', 'getRouteEstimate']);
 function send(message) {window.top.postMessage(Object.assign({channel:channel,nonce:connection.nonce},message), connection.origin);}
 window.addEventListener('message', function(event) {
   const message = event.data;
@@ -14,6 +14,7 @@ window.addEventListener('message', function(event) {
   if (message.method === 'prepareTrip') runner.prepareTrip(message.args[0]);
   if (message.method === 'generateTripDays') runner.generateTripDays(message.args[0],message.args[1]);
   if (message.method === 'completeTrip') runner.completeTrip(message.args[0]);
+  if (message.method === 'getRouteEstimate') runner.getRouteEstimate(message.args[0]);
 });
 send({ready:true});
 </script></body></html>

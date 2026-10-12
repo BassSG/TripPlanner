@@ -22,6 +22,32 @@ test('selected map coordinates survive validation and saved plans only with matc
 });
 test('saved/imported plans remove unrelated sources and dangling source references',()=>{const p=plan();p.sources=[{id:'S1',title:'Kanchanaburi',url:'https://example.com/kanchanaburi'},{id:'S2',title:'Chiang Mai travel',url:'https://example.com/chiang-mai'}];p.days[0].activities[0].sourceIds=['S1','S2'];const result=M.normalizePlan(p);assert.equal(result.sources.length,1);assert.equal(result.sources[0].id,'S2');assert.deepEqual(result.days[0].activities[0].sourceIds,['S2']);assert.equal(M.sourceMatchesDestination({title:'Tokyo highlights',url:'https://example.com/tokyo'},'โตเกียว ญี่ปุ่น'),true);});
 
+test('editing saved stops recalculates budget, drops stale citations, and preserves trip progress',()=>{
+  const raw=plan();raw.sources=[{id:'S1',title:'Chiang Mai food',url:'https://example.com/chiang-mai'}];raw.days[0].activities[0].sourceIds=['S1'];
+  const first=M.normalizePlan(raw);const id=first.days[0].activities[0].id;
+  first.completedStopIds=[id];
+  const changed=M.changeActivity(first,0,0,'edit',{title:'อาหารใหม่',location:'ประตูท่าแพ',time:'08:00',endTime:'09:00',description:'กินข้าว',category:'food',cost:'250',costNote:'ทั้งกลุ่ม',tips:''});
+  assert.equal(changed.totalExpense.total,1250);assert.equal(changed.totalExpense.remaining,3750);
+  assert.deepEqual(changed.days[0].activities[0].sourceIds,[]);assert.deepEqual(changed.completedStopIds,[id]);
+  assert.equal(first.days[0].activities[0].cost,100);
+});
+test('moving stops keeps time slots, and deleting a stop clears its completion',()=>{
+  const first=M.normalizePlan(plan());const secondId=first.days[0].activities[1].id;
+  first.completedStopIds=[secondId];const moved=M.changeActivity(first,0,1,'move',{direction:-1});
+  assert.equal(moved.days[0].activities[0].id,secondId);assert.equal(moved.days[0].activities[0].time,'08:00');
+  const removed=M.changeActivity(moved,0,0,'delete');assert.equal(removed.days[0].activities.length,1);assert.deepEqual(removed.completedStopIds,[]);
+  assert.throws(()=>M.changeActivity(removed,0,0,'delete'),/อย่างน้อยหนึ่ง/);
+});
+test('editing overnight lodging and trip budget recalculates totals without trusting old warnings',()=>{
+  const original=M.normalizePlan(plan());
+  const changed=M.changeStay(original,0,{name:'โรงแรมใหม่',pricePerNight:'1200',mapQuery:'โรงแรมใหม่ เชียงใหม่',highlights:'ใกล้เมือง'});
+  assert.equal(changed.days[0].accommodation.name,'โรงแรมใหม่');assert.equal(changed.totalExpense.accommodation,1200);
+  assert.equal(changed.totalExpense.total,1400);
+  const tight=M.changeBudget(changed,500);assert.equal(tight.totalExpense.remaining,-900);assert.ok(tight.warnings.some(w=>w.includes('เกินงบ')));
+  const relaxed=M.changeBudget(tight,5000);assert.equal(relaxed.totalExpense.remaining,3600);assert.ok(!relaxed.warnings.some(w=>w.includes('เกินงบ')));
+  assert.throws(()=>M.changeStay(changed,1,{name:'x',pricePerNight:5}),/ไม่มีที่พัก/);
+});
+
 test('calendar reminder fires at 09:00 Bangkok the day before travel, across year and leap boundaries',()=>{
   const now=new Date('2026-12-01T00:00:00Z');
   const ics=M.reminderIcs({...plan(),startDate:'2027-01-01'},now);

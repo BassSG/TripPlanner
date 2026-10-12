@@ -27,7 +27,7 @@ function setup(options={}) {
   return {ctx,props,cache,calls,logs,response};
 }
 test('legacy AI_API_KEY still works, diagnostics never expose credentials',()=>{
-  const {ctx}=setup();const status=ctx.getAppStatus();assert.equal(status.aiConfigured,true);assert.equal(status.searchConfigured,false);assert.ok(!JSON.stringify(status).includes('test-only-key'));assert.equal(status.version,'8.4.0');
+  const {ctx}=setup();const status=ctx.getAppStatus();assert.equal(status.aiConfigured,true);assert.equal(status.searchConfigured,false);assert.equal(status.routesConfigured,false);assert.ok(!JSON.stringify(status).includes('test-only-key'));assert.equal(status.version,'8.5.0');
 });
 test('selected map points reach the itinerary and malformed coordinates stop before AI calls',()=>{
   const {ctx,calls}=setup();
@@ -83,6 +83,25 @@ test('budget overruns are truthful, estimates are never scaled to fake affordabi
 test('malformed tickets and chunks fail without requests',()=>{
   const {ctx,calls}=setup();assert.equal(ctx.generateTripDays('../../secret',1).code,'EXPIRED');const prepared=ctx.prepareTrip(input);assert.equal(ctx.generateTripDays(prepared.ticket,2).code,'INVALID_CHUNK');assert.equal(calls.length,0);
 });
+test('route lookup validates input, keeps the key server-side, caches repeats, and honors the daily cap',()=>{
+  const {ctx,calls}=setup({properties:{GOOGLE_ROUTES_API_KEY:'route-secret',MAX_DAILY_ROUTE_REQUESTS:'1'},fetch:(url,settings,response)=>url.includes('routes.googleapis.com')?response(200,{routes:[{duration:'1840s',distanceMeters:23900}]}):response(500,{})});
+  const request={from:'วัดเชียงมั่น เชียงใหม่',to:'ประตูท่าแพ เชียงใหม่',clientId:input.clientId};
+  assert.equal(ctx.getAppStatus().routesConfigured,true);
+  assert.equal(ctx.getRouteEstimate({...request,to:'x'}).code,'VALIDATION');
+  assert.equal(ctx.getRouteEstimate(request).route.durationMinutes,31);
+  assert.equal(ctx.getRouteEstimate(request).cached,true);
+  assert.equal(calls.length,1);
+  assert.equal(JSON.parse(calls[0].settings.payload).travelMode,'DRIVE');
+  assert.equal(calls[0].settings.headers['X-Goog-FieldMask'],'routes.duration,routes.distanceMeters');
+  assert.ok(!JSON.stringify(ctx.getAppStatus()).includes('route-secret'));
+  assert.equal(ctx.getRouteEstimate({...request,to:'สนามบินเชียงใหม่'}).code,'DAILY_LIMIT');
+});
+test('route lookup without a key or route result fails clearly without fabricated minutes',()=>{
+  assert.equal(setup().ctx.getRouteEstimate({from:'เชียงใหม่',to:'ลำพูน',clientId:input.clientId}).code,'MISSING_ROUTES_KEY');
+  const {ctx}=setup({properties:{GOOGLE_ROUTES_API_KEY:'route-secret'},fetch:(_,__,response)=>response(200,{routes:[]})});
+  const result=ctx.getRouteEstimate({from:'เชียงใหม่',to:'ลำพูน',clientId:input.clientId});
+  assert.equal(result.success,false);assert.equal(result.code,'NO_ROUTE');
+});
 test('API helper functions remain private to google.script.run',()=>{
-  const allowed=new Set(['doGet','getAppStatus','prepareTrip','generateTripDays','completeTrip','generateFullPlan']);for(const match of source.matchAll(/^function (\w+)\(/gm))assert.ok(allowed.has(match[1])||match[1].endsWith('_'),match[1]);
+  const allowed=new Set(['doGet','getAppStatus','prepareTrip','generateTripDays','completeTrip','generateFullPlan','getRouteEstimate']);for(const match of source.matchAll(/^function (\w+)\(/gm))assert.ok(allowed.has(match[1])||match[1].endsWith('_'),match[1]);
 });

@@ -1,8 +1,15 @@
 # Validation — 12 October 2026 (Asia/Bangkok)
 
+## Version 8.5 — editable itinerary and travel mode
+
+- Local UI checked at desktop width and 390 × 844 mobile width with an existing real five-day saved plan. The focused travel screen showed the next stop, day selector, Maps navigation and progress controls. Marking a stop complete advanced the next stop; reversing it returned the plan to its prior state.
+- Added a temporary stop through the mobile edit form. The whole-trip estimate changed from ฿7,710 to ฿7,830 and the day estimate from ฿1,260 to ฿1,380. Deleting the temporary stop restored both original totals and 28 stops.
+- The activity editor, lodging editor, budget edit control and mobile layout were inspected. Browser console had no errors or warnings. Route API requests were verified with mocked backend tests; a live Routes API call requires the optional owner key.
+- `npm run check`, `npm test` and `git diff --check` pass. Regression tests cover edit/reorder/delete cost recomputation, completion IDs, accommodation and budget edits, and Routes API validation, key secrecy, caching and request ceilings.
+
 ## Automated checks
 
-`npm run check` and `npm test` pass. **29 regression tests** cover:
+`npm run check` and `npm test` pass. **39 regression tests** cover:
 
 - Input validation: integer days/people, budgets, group size, travel modes and real calendar dates.
 - Compatibility with the existing `AI_API_KEY`; diagnostics never contain credentials.

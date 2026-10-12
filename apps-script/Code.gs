@@ -3,23 +3,26 @@
  * Secrets belong in Apps Script > Project Settings > Script Properties.
  * OPENROUTER_API_KEY: required; legacy AI_API_KEY still works without migration.
  * BRAVE_API_KEY: optional live web search. Prices remain estimates, not bookings.
+ * GOOGLE_ROUTES_API_KEY: optional Routes API key for on-demand driving times.
  * AI_MODEL: optional OpenRouter model ID; overrides DEFAULT_MODEL below.
  * MAX_DAILY_AI_REQUESTS / MAX_DAILY_SEARCH_REQUESTS: owner-wide cost ceilings.
+ * MAX_DAILY_ROUTE_REQUESTS: owner-wide Routes API ceiling (default 100).
  * ALLOWED_PARENT_ORIGINS: optional comma-separated exact origins for the bridge.
  * APP_ENABLED: set to "false" to pause new plans. Existing local plans still work.
  * Never put an API key in HTML, app-config.js, GitHub, logs, or a URL.
  */
 const TRIP_CONFIG = Object.freeze({
-  NAME: 'TripPlanner', VERSION: '8.4.0',
+  NAME: 'TripPlanner', VERSION: '8.5.0',
   FAVICON_URL: 'https://basssg.github.io/TripPlanner/assets/icon-192.png',
   AI_ENDPOINT: 'https://openrouter.ai/api/v1/chat/completions',
   SEARCH_ENDPOINT: 'https://api.search.brave.com/res/v1/web/search',
+  ROUTES_ENDPOINT: 'https://routes.googleapis.com/directions/v2:computeRoutes',
   SEARCH_COUNTRY: 'ALL', SEARCH_LANGUAGE: 'th', // Brave does not support country=TH.
   DEFAULT_MODEL: 'google/gemini-3.8-flash',
   DEFAULT_PARENT_ORIGINS: ['https://basssg.github.io', 'http://localhost:4173', 'http://127.0.0.1:4173'],
   CHUNK_DAYS: 4, MAX_DAYS: 30, TICKET_TTL: 1800,
-  MAX_DAILY_AI_REQUESTS: 60, MAX_DAILY_SEARCH_REQUESTS: 80,
-  MAX_TRIPS_PER_BROWSER_HOUR: 6, CACHE_BYTES: 90000
+  MAX_DAILY_AI_REQUESTS: 60, MAX_DAILY_SEARCH_REQUESTS: 80, MAX_DAILY_ROUTE_REQUESTS: 100,
+  MAX_TRIPS_PER_BROWSER_HOUR: 6, MAX_ROUTES_PER_BROWSER_HOUR: 20, CACHE_BYTES: 90000
 });
 
 function doGet(e) {
@@ -49,11 +52,40 @@ function doGet(e) {
 function getAppStatus() {
   const config = readConfig_();
   return {
-    success: true, version: TRIP_CONFIG.VERSION, aiConfigured: !!config.aiKey,
+    success: true, version: TRIP_CONFIG.VERSION, aiConfigured: !!config.aiKey, routesConfigured: !!config.routesKey,
     searchConfigured: !!config.searchKey, model: config.model, enabled: config.enabled,
     maxDays: TRIP_CONFIG.MAX_DAYS, chunkDays: TRIP_CONFIG.CHUNK_DAYS,
-    aiDailyLimit: config.aiLimit, searchDailyLimit: config.searchLimit
+    aiDailyLimit: config.aiLimit, searchDailyLimit: config.searchLimit, routeDailyLimit: config.routeLimit
   };
+}
+
+/** Driving estimate is requested for a specific leg; never infer a road time from AI text. */
+function getRouteEstimate(input) {
+  return safely_(function () {
+    if (!input || typeof input !== 'object' || Array.isArray(input)) throw tripError_('VALIDATION', 'ข้อมูลเส้นทางไม่ถูกต้อง');
+    const from = text_(input.from, 240), to = text_(input.to, 240), clientId = text_(input.clientId, 80);
+    if (from.length < 2 || to.length < 2 || from === to || !/^[a-zA-Z0-9_-]{16,80}$/.test(clientId)) throw tripError_('VALIDATION', 'กรุณาระบุต้นทางและปลายทางให้ชัดเจน');
+    const config = readConfig_();
+    if (!config.routesKey) throw tripError_('MISSING_ROUTES_KEY', 'ยังไม่ได้ตั้งค่า GOOGLE_ROUTES_API_KEY ใน GAS');
+    const key = 'route:' + hash_(JSON.stringify([from,to]));
+    const cached = cacheGet_(key);
+    if (cached) return {success:true, route:cached, cached:true};
+    reserveBrowserRoute_(clientId);
+    reserveUsage_('ROUTE', config.routeLimit);
+    const payload = {origin:{address:from},destination:{address:to},travelMode:'DRIVE',routingPreference:'TRAFFIC_AWARE',languageCode:'th-TH',units:'METRIC'};
+    let response;
+    try {response = UrlFetchApp.fetch(TRIP_CONFIG.ROUTES_ENDPOINT,{method:'post',contentType:'application/json',payload:JSON.stringify(payload),headers:{'X-Goog-Api-Key':config.routesKey,'X-Goog-FieldMask':'routes.duration,routes.distanceMeters'},muteHttpExceptions:true});}
+    catch(error) {throw tripError_('ROUTE_NETWORK', 'ตรวจเส้นทางไม่สำเร็จ กรุณาลองใหม่');}
+    if (response.getResponseCode() !== 200) throw tripError_('ROUTE_UPSTREAM', 'บริการเส้นทางยังตอบกลับไม่ได้ ตรวจว่าเปิด Routes API และสิทธิ์ของคีย์แล้ว');
+    let result;
+    try {result=JSON.parse(response.getContentText());} catch(error) {throw tripError_('ROUTE_UPSTREAM', 'อ่านผลเส้นทางไม่สำเร็จ');}
+    const item=result.routes && result.routes[0];
+    const seconds=item && Number(String(item.duration || '').replace(/s$/,'')), meters=item && Number(item.distanceMeters);
+    if (!Number.isFinite(seconds) || seconds<=0 || !Number.isFinite(meters) || meters<0) throw tripError_('NO_ROUTE', 'ไม่พบเส้นทางรถยนต์ระหว่างจุดนี้ ลองตรวจชื่อสถานที่ในแผน');
+    const route={durationMinutes:Math.ceil(seconds/60),distanceKm:Math.round(meters/100)/10,checkedAt:new Date().toISOString(),mode:'car'};
+    cachePut_(key,route,900);
+    return {success:true,route:route,cached:false};
+  });
 }
 
 /** Step 1. Validate, find sources, issue an opaque short-lived request ticket. */
@@ -145,9 +177,11 @@ function readConfig_() {
   return {
     aiKey: properties.getProperty('OPENROUTER_API_KEY') || properties.getProperty('AI_API_KEY') || '',
     searchKey: properties.getProperty('BRAVE_API_KEY') || '',
+    routesKey: properties.getProperty('GOOGLE_ROUTES_API_KEY') || '',
     model: properties.getProperty('AI_MODEL') || TRIP_CONFIG.DEFAULT_MODEL,
     aiLimit: positiveLimit_(properties.getProperty('MAX_DAILY_AI_REQUESTS'), TRIP_CONFIG.MAX_DAILY_AI_REQUESTS),
     searchLimit: positiveLimit_(properties.getProperty('MAX_DAILY_SEARCH_REQUESTS'), TRIP_CONFIG.MAX_DAILY_SEARCH_REQUESTS),
+    routeLimit: positiveLimit_(properties.getProperty('MAX_DAILY_ROUTE_REQUESTS'), TRIP_CONFIG.MAX_DAILY_ROUTE_REQUESTS),
     enabled: properties.getProperty('APP_ENABLED') !== 'false',
     parentOrigins: (properties.getProperty('ALLOWED_PARENT_ORIGINS') || TRIP_CONFIG.DEFAULT_PARENT_ORIGINS.join(',')).split(',').map(function(s) {return s.trim();}).filter(Boolean)
   };
@@ -443,6 +477,14 @@ function reserveBrowserTrip_(clientId) {
     const cache = CacheService.getScriptCache(); const count = Number(cache.get(key) || 0);
     if (count >= TRIP_CONFIG.MAX_TRIPS_PER_BROWSER_HOUR) throw tripError_('TRIP_LIMIT', 'สร้างแผนหลายครั้งในชั่วโมงนี้แล้ว กรุณาลองอีกครั้งภายหลัง');
     cache.put(key, String(count + 1), 3600);
+  });
+}
+function reserveBrowserRoute_(clientId) {
+  withLock_(function() {
+    const key='route-browser:' + hash_(clientId) + ':' + Utilities.formatDate(new Date(), 'Asia/Bangkok', 'yyyyMMddHH');
+    const cache=CacheService.getScriptCache(), count=Number(cache.get(key) || 0);
+    if (count >= TRIP_CONFIG.MAX_ROUTES_PER_BROWSER_HOUR) throw tripError_('ROUTE_LIMIT', 'ตรวจเวลาเดินทางหลายครั้งในชั่วโมงนี้แล้ว กรุณาลองภายหลัง');
+    cache.put(key,String(count+1),3600);
   });
 }
 function reserveUsage_(kind, limit) {
