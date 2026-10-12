@@ -30,7 +30,17 @@ Build checks validate JavaScript/GAS syntax, JSON manifests, PWA icon dimensions
 - The first live 5-day test exposed missing lodging on the last day of an intermediate chunk. The final schema requires a lodging object, the prompt names the overnight days, and server validation rejects missing stays with the affected day. The corrected live 5-day run completed successfully.
 - The final UI corrects metadata to cover the whole trip and warns when transport costs have not been itemized; a zero transport estimate is never silently presented as a complete budget.
 
-Additional final browser checks and deployment results are recorded below as they complete.
+- The daily PNG downloaded successfully and was visually inspected: Thai text wraps correctly, all selected-day activities appear, and the image uses the dark theme.
+- With network connectivity disabled in the browser, the app reloaded from its service worker and reopened the complete saved 5-day plan. The checked packing item remained checked. Network emulation was restored afterward.
+- Print-media inspection confirms all **5 day panels** are displayed, including panels hidden during normal tab navigation. Printing uses a light palette. Automatic PDF extraction through the in-app browser CDP timed out; a physical browser print/save dialog was not tested.
+- GitHub Actions successfully built the source, ran all 26 regression tests, checked manifests/icons/secrets and verified generated-file consistency on the published branch.
+- The release uses the existing GAS deployment URL, version **119**, with the original access settings and Script Properties retained.
+
+## Release
+
+- [GitHub Pages](https://basssg.github.io/TripPlanner/)
+- [Change review](https://github.com/BassSG/TripPlanner/pull/1)
+- [Apps Script project](https://script.google.com/home/projects/1KMuYaHImc-CAzdRQwJye8kYO27sYch9QSjqb-_OaSDkfJFHZNTonprU6/edit)
 
 ## Practical limits
 
