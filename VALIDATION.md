@@ -17,7 +17,17 @@
 
 Build checks validate JavaScript/GAS syntax, JSON manifests, PWA icon dimensions, unique HTML IDs, generated output and accidental secret patterns. GitHub CI also rebuilds and ensures the generated GitHub/GAS files match the source.
 
-## Browser and API checks
+## Brand refresh — version 8.1
+
+- Replaced forest green with navy ink (`#0c121c` / `#141e2c`), muted sky blue and champagne gold throughout forms, results, dialogs, saved plans, mobile navigation, loading, offline and PNG exports.
+- New original route-arrow mark is shared by the web/GAS UI, loading, favicon, Apple/PWA icons and exported itinerary images. SVG wordmarks contain outlined letterforms; PNG sizes 16/32/48/180/192/512/1024 and a multi-size ICO were generated from the same SVG geometry.
+- Inspected at **1280 × 900** and **390 × 844**; document width fits the viewport. Mobile header retains the mark and page title without crowding.
+- Measured text/background contrast: primary **13.19:1**, secondary **6.51:1**, primary button **8.11:1**, selected navigation **6.08:1**, placeholder **6.49:1**.
+- Opened the existing real 5-day plan and downloaded its first-day PNG. Logo, Thai wrapping, activities, lodging, estimate note and new palette were visually verified in the exported file.
+- All **28 regression tests**, syntax/manifests/icon dimensions, portable SVG wordmarks and generated output checks pass for version 8.1. Brand assets and the offline shell participate in cache versioning.
+- Published to the existing GAS deployment as version **121**, keeping Script Properties and access unchanged.
+
+## Prior version 8.0 browser and API checks
 
 - The GAS `/dev` app was tested with the owner's existing OpenRouter key: a real Chiang Mai plan for **3 days / 2 adults** was returned and saved, with all three days and a recomputed group total of **฿5,720**.
 - Existing saved plans on the GAS origin were detected and migrated into the new UI; the legacy storage key is retained.

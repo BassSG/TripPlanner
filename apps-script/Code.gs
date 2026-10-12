@@ -10,7 +10,7 @@
  * Never put an API key in HTML, app-config.js, GitHub, logs, or a URL.
  */
 const TRIP_CONFIG = Object.freeze({
-  NAME: 'TripPlanner', VERSION: '8.0.0',
+  NAME: 'TripPlanner', VERSION: '8.1.0',
   AI_ENDPOINT: 'https://openrouter.ai/api/v1/chat/completions',
   SEARCH_ENDPOINT: 'https://api.search.brave.com/res/v1/web/search',
   SEARCH_COUNTRY: 'ALL', SEARCH_LANGUAGE: 'th', // Brave does not support country=TH.
