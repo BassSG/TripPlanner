@@ -1,22 +1,17 @@
 {
-  "name": "Trip-Planner",
+  "id": "./",
+  "name": "TripPlanner — วางแผนดี เที่ยวได้มากกว่า",
   "short_name": "TripPlanner",
-  "description": "วางแผนการเดินทางของคุณ",
-  "start_url": "https://script.google.com/macros/s/AKfycbzQvAenA1EFR85qv5CTy88BxJIR0EL0KKm7GWkY5lFnLWZJdQBpsV7rcjGumQyYCxvfgw/exec",
+  "description": "วางแผนเที่ยวตามงบของคุณ และเปิดทริปที่บันทึกไว้ออฟไลน์",
+  "lang": "th",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#000000",
+  "background_color": "#101916",
+  "theme_color": "#101916",
   "icons": [
-    {
-      "src": "https://s21-kling.klingai.com/bs2/upload-ylab-stunt-sgp/se/ai_portal_sgp_mmu_txt2img_aiweb_v15/53e5aa90-d7b3-457c-8217-5266265c1a5a_image.png?x-kcdn-pid=112372",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "https://s21-kling.klingai.com/bs2/upload-ylab-stunt-sgp/se/ai_portal_sgp_mmu_txt2img_aiweb_v15/53e5aa90-d7b3-457c-8217-5266265c1a5a_image.png?x-kcdn-pid=112372",
-      "sizes": "512x512",
-      "type": "image/png"
-    }
+    {"src":"./assets/icon-192.png","sizes":"192x192","type":"image/png","purpose":"any maskable"},
+    {"src":"./assets/icon-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}
   ],
   "orientation": "any",
   "prefer_related_applications": false

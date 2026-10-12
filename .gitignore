@@ -1,0 +1,7 @@
+.private/
+node_modules/
+*.log
+.env*
+!.env.example
+.clasprc.json
+artifacts/

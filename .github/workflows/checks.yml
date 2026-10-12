@@ -1,0 +1,20 @@
+name: TripPlanner checks
+on:
+  push:
+    branches: [main, 'improve/**']
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+      - run: npm run build
+      - run: npm run check
+      - run: npm test
+      - name: Ensure generated pages match their source
+        run: git diff --exit-code -- index.html apps-script/index.html service-worker.js
